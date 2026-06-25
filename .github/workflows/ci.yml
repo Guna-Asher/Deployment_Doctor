@@ -1,0 +1,232 @@
+name: Deployment Doctor CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "18"
+
+jobs:
+  # ── Backend Tests ──────────────────────────────────────────────────────────
+  test-backend:
+    name: Backend Tests & Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: deploymentdoctor
+          POSTGRES_PASSWORD: dd_secure_2024
+          POSTGRES_DB: deployment_doctor
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run pytest with coverage
+        env:
+          DATABASE_URL: postgresql+asyncpg://deploymentdoctor:dd_secure_2024@localhost:5432/deployment_doctor
+          ENGINE_VERSION: "1.6.0"
+          BLUEPRINT_VERSION: "1.0.0"
+        run: |
+          cd backend
+          pytest tests/ \
+            -v \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=85
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  # ── Blueprint Validation ───────────────────────────────────────────────────
+  validate-blueprints:
+    name: Blueprint Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: cd backend && pip install -r requirements.txt
+
+      - name: Validate blueprints and DAG
+        env:
+          DATABASE_URL: postgresql+asyncpg://deploymentdoctor:dd_secure_2024@localhost:5432/deployment_doctor
+        run: |
+          cd backend
+          python -c "
+          from app.services.blueprint_validator import validate_blueprints, _detect_dag_cycle
+          bps = validate_blueprints()
+          cycle = _detect_dag_cycle(bps)
+          assert len(bps) == 10, f'Expected 10 blueprints, got {len(bps)}'
+          assert cycle == [], f'DAG cycle detected: {cycle}'
+          print(f'OK: {len(bps)} blueprints, 0 cycles')
+          "
+
+  # ── Backend Linting ────────────────────────────────────────────────────────
+  lint-backend:
+    name: Backend Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linters
+        run: pip install flake8==7.0.0
+
+      - name: Run flake8
+        run: |
+          cd backend
+          flake8 app/ server.py \
+            --max-line-length=100 \
+            --exclude=__pycache__,.venv \
+            --ignore=E501,W503
+
+  # ── Frontend Build ─────────────────────────────────────────────────────────
+  build-frontend:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        run: cd frontend && yarn install --frozen-lockfile
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          REACT_APP_BACKEND_URL=http://localhost:8001 yarn build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          retention-days: 7
+
+  # ── Acceptance Tests ───────────────────────────────────────────────────────
+  acceptance-tests:
+    name: Acceptance Tests
+    runs-on: ubuntu-latest
+    needs: [test-backend, validate-blueprints]
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: deploymentdoctor
+          POSTGRES_PASSWORD: dd_secure_2024
+          POSTGRES_DB: deployment_doctor
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: cd backend && pip install -r requirements.txt
+
+      - name: Run acceptance tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://deploymentdoctor:dd_secure_2024@localhost:5432/deployment_doctor
+          ENGINE_VERSION: "1.6.0"
+          BLUEPRINT_VERSION: "1.0.0"
+        run: |
+          cd backend
+          python -c "
+          from pathlib import Path
+          from app.schemas import AnalysisRequest
+          from app.services.root_cause_engine import run_analysis
+          from app.services.blueprint_validator import validate_blueprints
+          validate_blueprints()
+
+          sample = Path('sample-logs')
+
+          # Acceptance Test 1: DB Connection Failure
+          log = (sample / '01-db-connection-failure.log').read_text()
+          r = run_analysis(AnalysisRequest(log_content=log, filename='01.log'))
+          assert r.primary_incident.blueprint_id == 'DB_CONNECTION_FAILURE', f'Got: {r.primary_incident.blueprint_id}'
+          assert r.primary_incident.confidence >= 90, f'Confidence: {r.primary_incident.confidence}'
+          assert len(r.primary_incident.evidence) >= 4
+          assert r.detection_status == 'CONFIDENT'
+          print('PASS: Acceptance Test 1 — DB_CONNECTION_FAILURE')
+
+          # Acceptance Test 2: Root Cause Demo
+          log = (sample / '11-root-cause-demo.log').read_text()
+          r = run_analysis(AnalysisRequest(log_content=log, filename='11.log'))
+          assert r.primary_incident.blueprint_id == 'DB_CONNECTION_FAILURE'
+          contrib_ids = [c.blueprint_id for c in r.contributing_incidents]
+          assert 'CRASH_LOOP_BACKOFF' in contrib_ids
+          assert r.primary_incident.relationship_bonus == 20
+          assert r.detection_status == 'CONFIDENT'
+          print('PASS: Acceptance Test 2 — Root Cause Demo')
+
+          # Acceptance Test 3: Unknown log
+          r = run_analysis(AnalysisRequest(log_content='Everything is fine.', filename='unknown.log'))
+          assert r.detection_status == 'INSUFFICIENT_EVIDENCE'
+          assert r.confidence == 0.0
+          assert r.primary_incident is None
+          print('PASS: Acceptance Test 3 — INSUFFICIENT_EVIDENCE')
+
+          print('ALL ACCEPTANCE TESTS PASSED')
+          "

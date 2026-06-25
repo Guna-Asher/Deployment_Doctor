@@ -83,15 +83,15 @@ User Upload → Validation → Blueprint Matching → Evidence Attribution → C
 
 ### P1 (High Priority)
 - OpenRouter API key integration (user to provide OPENROUTER_API_KEY)
-- README.md with architecture diagrams, setup guide, and interview questions
-- Docker Compose setup with PostgreSQL container
+- ~~README.md~~ DONE — 1,394-line README with all 22 spec sections + Mermaid diagrams
+- ~~Docker Compose~~ DONE — docker-compose.yml + backend/frontend Dockerfiles
+- ~~GitHub Actions~~ DONE — .github/workflows/ci.yml with 4 jobs
 
 ### P2 (Nice to Have)
 - Analysis history page (view past analyses)
-- Exportable PDF report
+- Exportable PDF/Markdown report
 - Custom blueprint creation UI
 - Webhook/Slack notification on detection
-- GitHub Actions CI with pytest
 
 ## Known Limitations
 - AI Summary uses deterministic fallback (OpenRouter key not yet provided)
