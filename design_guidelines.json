@@ -1,0 +1,102 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) + Terminal/Developer Tool mix",
+  "global_rules": {
+    "background_color": "#0f1117",
+    "surface_color": "#1a1c23",
+    "border_radius": "rounded-md",
+    "border_style": "1px solid #2d313a",
+    "spacing_system": "Dense layout: p-4 to p-6 for panels, gap-4 to gap-6 for grids. Follow 'Control Room Grid' protocol.",
+    "shadows": "None. Rely on 1px borders for separation to maintain a flat, technical aesthetic.",
+    "animations": "Minimal. Focus on micro-interactions (hover states, focus rings). No bouncy or slow transitions."
+  },
+  "typography": {
+    "heading_font": "'Manrope', sans-serif",
+    "body_font": "'Manrope', sans-serif",
+    "monospace_font": "'JetBrains Mono', monospace",
+    "heading_sizes": {
+      "h1": "text-2xl md:text-3xl font-semibold tracking-tight",
+      "h2": "text-xl font-medium tracking-tight",
+      "h3": "text-lg font-medium",
+      "h4": "text-sm font-semibold uppercase tracking-wider text-slate-400"
+    },
+    "body_sizes": {
+      "base": "text-sm text-slate-300 leading-relaxed",
+      "small": "text-xs text-slate-400",
+      "log_line": "text-xs font-mono text-slate-300 leading-snug"
+    }
+  },
+  "colors": {
+    "background": {
+      "page": "bg-[#0f1117]",
+      "panel": "bg-[#1a1c23]",
+      "panel_hover": "hover:bg-[#23252e]",
+      "input": "bg-[#0f1117]"
+    },
+    "border": {
+      "default": "border-[#2d313a]",
+      "focus": "focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+    },
+    "text": {
+      "primary": "text-slate-100",
+      "secondary": "text-slate-400",
+      "muted": "text-slate-500"
+    },
+    "status": {
+      "critical": "text-red-500 bg-red-500/10 border-red-500/20",
+      "warning": "text-orange-500 bg-orange-500/10 border-orange-500/20",
+      "healthy": "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+      "info": "text-cyan-500 bg-cyan-500/10 border-cyan-500/20"
+    },
+    "brand": {
+      "primary": "bg-cyan-600 hover:bg-cyan-500 text-white",
+      "secondary": "bg-[#2d313a] hover:bg-[#3a3f4a] text-white"
+    }
+  },
+  "layout_patterns": {
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6",
+    "panel": "bg-[#1a1c23] border border-[#2d313a] rounded-md p-4 md:p-6 flex flex-col",
+    "navigation": "Left sidebar (w-64) with dense link list, or slim rail (w-16). Top header for breadcrumbs and global actions.",
+    "f_pattern_hierarchy": "Top row spans full width or large cols for primary metrics. Subsequent rows break into smaller widgets."
+  },
+  "components": {
+    "buttons": "Flat, rounded-md, no shadows. Use 'data-testid' for all buttons.",
+    "cards": "Strictly functional. border-[#2d313a] bg-[#1a1c23]. Header has border-b.",
+    "log_viewer": "Must use 'JetBrains Mono'. Black background (#000000 or #0a0a0a) inside the panel, line numbers on the left. Syntax highlighting based on severity (ERROR=red, WARN=orange).",
+    "badges": "Small, rounded-full or rounded-sm, using status colors. text-[10px] uppercase font-bold tracking-wider.",
+    "relationship_graph": "Use flex/grid layouts with Tailwind border lines and pseudo-elements or SVG arrows to connect nodes. Nodes are small cards.",
+    "ai_summary": "Accordion or Collapsible component, closed by default. Subdued styling."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "stroke-2, size-4 or size-5. Keep them functional, not decorative."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_background",
+        "url": "https://images.unsplash.com/photo-1689443111130-6e9c7dfd8f9e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwyfHxkYXJrJTIwYWJzdHJhY3QlMjB0ZWNobm9sb2d5JTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3ODIzNzI1Mzl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Subtle dark abstract pattern to be used with high opacity overlay (bg-[#0f1117]/90) on the upload page background if needed."
+      }
+    ],
+    "logos": "Use Lucide React 'Activity', 'Terminal', or 'Cpu' icon combined with text 'Deployment Doctor' as the brand logo."
+  },
+  "pages_instructions": {
+    "UploadPage": "Center the drag-and-drop zone. Make it look like a terminal or technical dropzone. Dashed borders with hover states. Include file size limits and constraints clearly.",
+    "ReportPage": "High data density. The top should have a 'Confidence Score' gauge or large number. The 'Root Cause' should be the most prominent text. 'Verification Commands' should look like terminal copy-paste blocks.",
+    "DemoCenter": "Grid of cards. Each card represents a log scenario. Use clear titles and severity badges on each card.",
+    "IncidentKnowledgeBase": "A dense data table. Columns: Rule ID, Pattern, Severity, Category, Actions. Use Shadcn Table."
+  },
+  "accessibility_and_testing": {
+    "testing": "All interactive elements (buttons, inputs, links, tabs) MUST have a 'data-testid' attribute (e.g., data-testid='upload-log-button').",
+    "contrast": "Ensure text against #0f1117 and #1a1c23 meets WCAG AA standards. Use text-slate-100 for primary text."
+  },
+  "instructions_to_main_agent": [
+    "Install required fonts: '@fontsource/manrope' and '@fontsource/jetbrains-mono'.",
+    "Use Lucide-React for all icons.",
+    "Build the incident relationship graph using raw HTML/Tailwind. Do not install ReactFlow.",
+    "Ensure all panels have 'border border-[#2d313a] bg-[#1a1c23] rounded-md'.",
+    "Do not use generic Shadcn default styles; override them to match this dark theme.",
+    "Always apply 'data-testid' to interactive elements."
+  ]
+}
