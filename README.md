@@ -856,9 +856,8 @@ EOF
 
 ```bash
 # backend/.env
-DATABASE_URL=postgresql+asyncpg://deploymentdoctor:dd_secure_2024@localhost:5432/deployment_doctor
-OPENROUTER_API_KEY=          # Optional: add your key to enable AI summaries
-EMERGENT_LLM_KEY=            # Optional: fallback LLM key
+DATABASE_URL=postgresql+asyncpg://deploymentdoctor:yourpassword@localhost:5432/deployment_doctor
+OPENROUTER_API_KEY=          # Optional: add your OpenRouter key to enable AI summaries
 ENGINE_VERSION=1.6.0
 BLUEPRINT_VERSION=1.0.0
 CORS_ORIGINS=*

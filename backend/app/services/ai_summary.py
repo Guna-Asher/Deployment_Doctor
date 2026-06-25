@@ -1,22 +1,21 @@
 """
 AI Summary Service
-Optional presentation layer. Never performs detection or reasoning.
+Optional presentation layer only. Never performs detection or reasoning.
 Input: pre-computed engine findings (never raw log content).
-Falls back to deterministic template when no AI key is available.
 
 Priority:
-  1. OpenRouter API (OPENROUTER_API_KEY)
-  2. emergentintegrations / EMERGENT_LLM_KEY
-  3. Deterministic fallback template
+  1. OpenRouter API (set OPENROUTER_API_KEY)
+  2. Deterministic fallback template (always available, no key required)
+
+Uses only standard httpx for HTTP. No proprietary SDKs.
 """
 import os
 import json
 import logging
-import asyncio
-from typing import Optional
+from typing import Optional, Tuple
 
 import httpx
-from app.schemas import IncidentResult, EngineResult
+from app.schemas import EngineResult
 
 logger = logging.getLogger(__name__)
 
@@ -60,47 +59,41 @@ def _build_ai_input(result: EngineResult) -> dict:
     }
 
 
-async def generate_ai_summary(result: EngineResult) -> tuple[Optional[str], bool]:
+async def generate_ai_summary(result: EngineResult) -> Tuple[Optional[str], bool]:
     """
-    Attempt to generate AI summary.
+    Attempt to generate AI summary via OpenRouter.
     Returns (summary_text, is_ai_generated).
     Never crashes — all exceptions are caught.
+    Falls back to deterministic template when key is absent or call fails.
     """
     if not result.primary_incident:
         return None, False
 
-    ai_input = _build_ai_input(result)
-
-    # Attempt 1: OpenRouter
     openrouter_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
     if openrouter_key:
-        summary = await _call_openrouter(openrouter_key, ai_input)
+        summary = await _call_openrouter(openrouter_key, _build_ai_input(result))
         if summary:
             return summary, True
 
-    # Attempt 2: emergentintegrations (EMERGENT_LLM_KEY)
-    emergent_key = os.environ.get("EMERGENT_LLM_KEY", "").strip()
-    if emergent_key:
-        summary = await _call_emergent(emergent_key, ai_input)
-        if summary:
-            return summary, True
-
-    # Fallback: deterministic template
     return _deterministic_summary(result), False
 
 
 async def _call_openrouter(api_key: str, ai_input: dict) -> Optional[str]:
-    """Call OpenRouter API. Returns None on any failure."""
+    """
+    Call OpenRouter API using standard httpx.
+    OpenRouter is OpenAI-API-compatible — standard REST, no proprietary SDK required.
+    Returns None on any failure (timeout, rate limit, auth error, network error).
+    """
+    payload = {
+        "model": OPENROUTER_MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Incident data:\n{json.dumps(ai_input, indent=2)}"},
+        ],
+        "max_tokens": 300,
+        "temperature": 0,
+    }
     try:
-        payload = {
-            "model": OPENROUTER_MODEL,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Incident data:\n{json.dumps(ai_input, indent=2)}"},
-            ],
-            "max_tokens": 300,
-            "temperature": 0,
-        }
         async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.post(
                 OPENROUTER_API_URL,
@@ -115,35 +108,19 @@ async def _call_openrouter(api_key: str, ai_input: dict) -> Optional[str]:
             response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"].strip()
+    except httpx.TimeoutException:
+        logger.warning("OpenRouter: request timed out")
+    except httpx.HTTPStatusError as e:
+        logger.warning(f"OpenRouter: HTTP {e.response.status_code}")
     except Exception as e:
-        logger.warning(f"OpenRouter summary failed: {e}")
-        return None
-
-
-async def _call_emergent(api_key: str, ai_input: dict) -> Optional[str]:
-    """Call emergentintegrations. Returns None on any failure."""
-    try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"dd-summary-{id(ai_input)}",
-            system_message=SYSTEM_PROMPT,
-        ).with_model("openai", "gpt-4o-mini")
-
-        msg = UserMessage(text=f"Incident data:\n{json.dumps(ai_input, indent=2)}")
-        response = await chat.send_message(msg)
-        if response and hasattr(response, "text"):
-            return response.text.strip()
-        return None
-    except Exception as e:
-        logger.warning(f"emergentintegrations summary failed: {e}")
-        return None
+        logger.warning(f"OpenRouter: unexpected error — {e}")
+    return None
 
 
 def _deterministic_summary(result: EngineResult) -> str:
     """
     Deterministic fallback summary template.
-    Always produces the same output for the same input.
+    Always produces the same output for the same input. No external calls.
     """
     primary = result.primary_incident
     if not primary:
