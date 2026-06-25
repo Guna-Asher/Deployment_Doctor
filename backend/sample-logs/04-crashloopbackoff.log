@@ -1,0 +1,14 @@
+2024-01-15 13:00:00.001 INFO  [kubelet] Starting container: api-server
+2024-01-15 13:00:00.567 ERROR [kubelet] Error: failed to start container "api-server": exit status 1
+2024-01-15 13:00:01.001 WARN  [kubelet] Back-off restarting failed container api-server in pod api-deployment-7d9f8b
+2024-01-15 13:00:02.234 INFO  [kubelet] Restarting container api-server (restart count: 1)
+2024-01-15 13:00:05.001 ERROR [kubelet] container terminated with exit code 1 — api-server
+2024-01-15 13:00:05.456 WARN  [kubelet] Back-off restarting failed container api-server in pod api-deployment-7d9f8b
+2024-01-15 13:00:10.001 INFO  [kubelet] Restarting container api-server (restart count: 2)
+2024-01-15 13:00:15.001 ERROR [kubelet] Liveness probe failed: HTTP probe failed with status code 500
+2024-01-15 13:00:15.456 ERROR [kubelet] container terminated with exit code 137 — api-server
+2024-01-15 13:00:15.789 WARN  [events] pod api-deployment-7d9f8b is in a restart loop — CrashLoopBackOff
+2024-01-15 13:00:16.001 ERROR [kubelet] Back-off restarting failed container api-server in pod api-deployment-7d9f8b
+2024-01-15 13:00:20.001 ERROR [kubelet] CrashLoopBackOff: back-off 1m0s restarting failed container=api-server
+2024-01-15 13:00:20.234 ERROR [k8s] container exited with error after 3 restarts — entering exponential backoff
+2024-01-15 13:00:20.567 INFO  [events] Type: Warning  Reason: BackOff  Message: Back-off restarting failed container

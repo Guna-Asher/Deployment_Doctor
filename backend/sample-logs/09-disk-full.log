@@ -1,0 +1,13 @@
+2024-01-15 18:00:00.001 INFO  [db] PostgreSQL running normally. WAL archiving active.
+2024-01-15 18:00:15.001 WARN  [db] WAL archive directory usage: 88%
+2024-01-15 18:00:30.001 WARN  [storage] Disk usage on /var/lib/postgresql: 92%
+2024-01-15 18:00:45.001 ERROR [db] could not write WAL file: No space left on device
+2024-01-15 18:00:45.234 ERROR [fs] write failed: No space left on device — path: /var/lib/postgresql/data
+2024-01-15 18:00:45.456 ERROR [kernel] ENOSPC: /dev/sdb1 filesystem is full
+2024-01-15 18:00:46.001 ERROR [db] checkpoint failure: disk full — could not write checkpoint record
+2024-01-15 18:00:46.234 ERROR [app] write failed: No space left on device for temp file creation
+2024-01-15 18:00:46.678 ERROR [storage] Disk quota exceeded for volume claim pvc-postgres-data
+2024-01-15 18:00:47.001 ERROR [fs] unable to write: no space left on /mnt/data volume
+2024-01-15 18:00:47.456 ERROR [db] storage volume is full — database accepting read-only connections only
+2024-01-15 18:00:47.789 ERROR [db] not enough disk space: requires 256MB, available 0MB
+2024-01-15 18:00:48.001 FATAL [db] PostgreSQL PANIC: not enough disk space — database shutdown imminent
