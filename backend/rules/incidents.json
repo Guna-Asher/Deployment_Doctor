@@ -1,0 +1,432 @@
+[
+  {
+    "id": "DB_CONNECTION_FAILURE",
+    "title": "Database Connection Failure",
+    "category": "DATABASE",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 1,
+    "patterns": [
+      {"match": "connection refused", "weight": 40},
+      {"match": "could not connect to server", "weight": 45},
+      {"match": "database connection failed", "weight": 50},
+      {"match": "ECONNREFUSED", "weight": 40},
+      {"match": "connection pool exhausted", "weight": 35},
+      {"match": "too many connections", "weight": 30},
+      {"match": "unable to connect to database", "weight": 45},
+      {"match": "sql: database is closed", "weight": 35},
+      {"match": "lost connection to MySQL server", "weight": 40}
+    ],
+    "possible_causes": [
+      "Database server is not running or has crashed",
+      "Incorrect database host, port, or credentials in configuration",
+      "Network connectivity issue between service and database pod",
+      "Database connection pool exhausted due to connection leaks",
+      "Database is overloaded and rejecting new connections",
+      "Firewall or network policy rules blocking the database port"
+    ],
+    "verification_steps": [
+      "kubectl exec -it <pod> -- nc -zv <db-host> 5432",
+      "kubectl logs <db-pod> --tail=100",
+      "kubectl get endpoints <db-service>",
+      "kubectl describe pod <app-pod> | grep -A5 'Env'",
+      "psql -h <db-host> -U <user> -d <db> -c '\\conninfo'"
+    ],
+    "recommended_fixes": [
+      "Verify database pod is running: kubectl get pods -l app=<db-label>",
+      "Check service endpoints: kubectl get svc <db-service>",
+      "Increase database connection pool size in application config",
+      "Verify database credentials in Kubernetes secrets",
+      "Check network policies: kubectl get networkpolicies -A",
+      "Restart the database: kubectl rollout restart deployment/<db-deployment>"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "DNS_FAILURE",
+    "title": "DNS Resolution Failure",
+    "category": "NETWORKING",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 2,
+    "patterns": [
+      {"match": "no such host", "weight": 50},
+      {"match": "Name or service not known", "weight": 45},
+      {"match": "getaddrinfo ENOTFOUND", "weight": 45},
+      {"match": "Could not resolve host", "weight": 45},
+      {"match": "dns lookup failed", "weight": 50},
+      {"match": "NXDOMAIN", "weight": 40},
+      {"match": "Temporary failure in name resolution", "weight": 40},
+      {"match": "failed to resolve hostname", "weight": 45},
+      {"match": "dial tcp: lookup", "weight": 40}
+    ],
+    "possible_causes": [
+      "Kubernetes CoreDNS is not running or has crashed",
+      "Service name typo or service does not exist in the namespace",
+      "DNS ConfigMap misconfiguration in the cluster",
+      "Network policies blocking DNS traffic on UDP port 53",
+      "Pod namespace isolation preventing cross-namespace DNS resolution",
+      "CoreDNS pod is OOMKilled due to memory pressure"
+    ],
+    "verification_steps": [
+      "kubectl exec -it <pod> -- nslookup kubernetes.default",
+      "kubectl get pods -n kube-system -l k8s-app=kube-dns",
+      "kubectl logs -n kube-system -l k8s-app=kube-dns --tail=50",
+      "kubectl exec -it <pod> -- cat /etc/resolv.conf",
+      "kubectl get svc <service-name> -n <namespace>"
+    ],
+    "recommended_fixes": [
+      "Restart CoreDNS: kubectl rollout restart deployment/coredns -n kube-system",
+      "Verify service name and namespace: kubectl get svc -A | grep <service-name>",
+      "Inspect CoreDNS ConfigMap: kubectl get configmap coredns -n kube-system -o yaml",
+      "Increase CoreDNS memory limits if OOMKilled",
+      "Verify DNS policy in pod spec: dnsPolicy: ClusterFirst",
+      "Check network policies blocking port 53: kubectl get networkpolicies -A"
+    ],
+    "causes_incidents": ["DB_CONNECTION_FAILURE", "IMAGE_PULL_FAILURE"]
+  },
+  {
+    "id": "PORT_CONFLICT",
+    "title": "Port Conflict / Address Already in Use",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 5,
+    "patterns": [
+      {"match": "address already in use", "weight": 55},
+      {"match": "EADDRINUSE", "weight": 55},
+      {"match": "bind: address already in use", "weight": 60},
+      {"match": "port is already allocated", "weight": 50},
+      {"match": "listen tcp: bind", "weight": 40},
+      {"match": "failed to bind to port", "weight": 50},
+      {"match": "only one usage of each socket address", "weight": 50},
+      {"match": "socket already in use", "weight": 45},
+      {"match": "address in use", "weight": 40}
+    ],
+    "possible_causes": [
+      "Another process or pod is already listening on the same port",
+      "Previous application instance was not shut down cleanly",
+      "Port defined in service spec conflicts with a system-reserved port",
+      "DaemonSet or sidecar container occupying the port",
+      "hostPort configuration conflicts with a node-level process",
+      "Rapid restart preventing OS from releasing the port socket"
+    ],
+    "verification_steps": [
+      "kubectl get pods -o wide | grep <namespace>",
+      "kubectl describe pod <pod> | grep -i 'port\\|hostPort'",
+      "kubectl exec -it <node-debug-pod> -- ss -tlnp | grep <port>",
+      "kubectl get svc -A | grep <port>",
+      "kubectl logs <pod> --previous --tail=50"
+    ],
+    "recommended_fixes": [
+      "Identify the conflicting process: kubectl exec <pod> -- ss -tlnp",
+      "Delete the conflicting pod: kubectl delete pod <conflicting-pod>",
+      "Change the application's port in the Deployment spec",
+      "Add a PreStop lifecycle hook to allow graceful socket release",
+      "Check for stale NodePort reservations: kubectl get svc -A",
+      "Use SO_REUSEPORT socket option if supported by your application"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "CRASH_LOOP_BACKOFF",
+    "title": "CrashLoopBackOff — Container Restart Loop",
+    "category": "KUBERNETES",
+    "severity": "CRITICAL",
+    "incident_role": "symptom",
+    "priority": 3,
+    "patterns": [
+      {"match": "CrashLoopBackOff", "weight": 60},
+      {"match": "Back-off restarting failed container", "weight": 55},
+      {"match": "Error: failed to start container", "weight": 40},
+      {"match": "container terminated with exit code", "weight": 35},
+      {"match": "Liveness probe failed", "weight": 30},
+      {"match": "restarting container", "weight": 25},
+      {"match": "pod restart count", "weight": 25},
+      {"match": "container exited with error", "weight": 30},
+      {"match": "pod is in a restart loop", "weight": 45}
+    ],
+    "possible_causes": [
+      "Application crashes immediately on startup due to missing dependency",
+      "Database or external service unavailable at startup",
+      "Missing or invalid environment variables or secrets",
+      "Insufficient memory limits causing OOMKilled",
+      "Failed liveness probe causing repeated container restarts",
+      "Image entrypoint or command exits with non-zero status"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A10 'State\\|Last State'",
+      "kubectl logs <pod> --previous --tail=100",
+      "kubectl get events --sort-by=.lastTimestamp | grep <pod>",
+      "kubectl describe pod <pod> | grep -i 'liveness\\|readiness'",
+      "kubectl top pod <pod>"
+    ],
+    "recommended_fixes": [
+      "Check previous container logs: kubectl logs <pod> --previous",
+      "Verify all environment variables and secrets are mounted: kubectl describe pod <pod>",
+      "Increase memory limits in the pod spec",
+      "Fix the underlying root cause (database, DNS, config) triggering the crash",
+      "Add initialDelaySeconds to liveness probe to allow startup time",
+      "Use kubectl debug to attach to a failing container for inspection"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "OOM_KILLED",
+    "title": "Out of Memory — Container Killed by OOM Killer",
+    "category": "RESOURCES",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 4,
+    "patterns": [
+      {"match": "OOMKilled", "weight": 65},
+      {"match": "Out of memory", "weight": 55},
+      {"match": "memory limit exceeded", "weight": 55},
+      {"match": "container OOMKilled", "weight": 60},
+      {"match": "java.lang.OutOfMemoryError", "weight": 60},
+      {"match": "cannot allocate memory", "weight": 45},
+      {"match": "Killed process", "weight": 40},
+      {"match": "oom-killer", "weight": 55},
+      {"match": "Exited with OOMKilled", "weight": 60}
+    ],
+    "possible_causes": [
+      "Memory limit set too low for the application workload",
+      "Memory leak in application code causing gradual heap growth",
+      "Unexpected traffic spike consuming more memory than provisioned",
+      "JVM heap not tuned to match Kubernetes memory limits",
+      "Large file processing or caching operations without bounds",
+      "Missing memory limits causing noisy-neighbor eviction"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A5 'OOMKilled\\|Limits'",
+      "kubectl top pod <pod> --containers",
+      "kubectl get events | grep OOMKilled",
+      "kubectl describe node <node> | grep -A10 'Allocated resources'",
+      "kubectl logs <pod> --previous | grep -i 'heap\\|memory\\|OOM'"
+    ],
+    "recommended_fixes": [
+      "Increase memory limits in the Deployment spec",
+      "Profile memory usage: kubectl exec <pod> -- cat /proc/meminfo",
+      "Set JVM heap flags: -Xmx and -Xms matching container limits",
+      "Enable memory-based autoscaling with HPA",
+      "Add Prometheus memory alerts to catch trends early",
+      "Investigate and fix application-level memory leaks"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "IMAGE_PULL_FAILURE",
+    "title": "Container Image Pull Failure",
+    "category": "KUBERNETES",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 6,
+    "patterns": [
+      {"match": "Failed to pull image", "weight": 55},
+      {"match": "ErrImagePull", "weight": 55},
+      {"match": "ImagePullBackOff", "weight": 60},
+      {"match": "repository does not exist", "weight": 50},
+      {"match": "unauthorized: authentication required", "weight": 45},
+      {"match": "manifest unknown", "weight": 50},
+      {"match": "pull access denied", "weight": 50},
+      {"match": "image not found", "weight": 45},
+      {"match": "Error response from daemon: pull", "weight": 40}
+    ],
+    "possible_causes": [
+      "Container image tag does not exist in the registry",
+      "Missing or expired imagePullSecret for private registry",
+      "Incorrect image name or registry URL in the Deployment spec",
+      "Private registry is unreachable due to network or DNS failure",
+      "Registry rate limit exceeded (DockerHub free tier)",
+      "Image was deleted from the registry after deployment"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A10 'Events\\|Image'",
+      "kubectl get secret <pull-secret> -o jsonpath='{.data.\\.dockerconfigjson}' | base64 -d",
+      "docker pull <image-name>:<tag>",
+      "kubectl get events | grep 'pull\\|image'",
+      "kubectl describe pod <pod> | grep imagePullPolicy"
+    ],
+    "recommended_fixes": [
+      "Verify image tag exists in the registry: docker manifest inspect <image>:<tag>",
+      "Create or refresh imagePullSecret: kubectl create secret docker-registry",
+      "Link imagePullSecret to service account: kubectl patch sa default -p",
+      "Switch to a correct or existing image tag in the Deployment",
+      "Configure a registry mirror to avoid DockerHub rate limits",
+      "Set imagePullPolicy: Always to ensure fresh image fetches"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "AUTHENTICATION_FAILURE",
+    "title": "Authentication Failure",
+    "category": "SECURITY",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 7,
+    "patterns": [
+      {"match": "authentication failed", "weight": 55},
+      {"match": "invalid credentials", "weight": 55},
+      {"match": "401 Unauthorized", "weight": 50},
+      {"match": "invalid token", "weight": 50},
+      {"match": "password mismatch", "weight": 55},
+      {"match": "login failed", "weight": 55},
+      {"match": "access denied", "weight": 40},
+      {"match": "FATAL: password authentication failed", "weight": 60},
+      {"match": "SSH authentication error", "weight": 50}
+    ],
+    "possible_causes": [
+      "Incorrect password or API key stored in Kubernetes secret",
+      "Rotated credentials not updated in the secret store",
+      "JWT token expired or signed with wrong secret key",
+      "Service account permissions revoked or token invalidated",
+      "Database user password changed without updating application config",
+      "mTLS certificate expired or certificate authority mismatch"
+    ],
+    "verification_steps": [
+      "kubectl get secret <secret-name> -o yaml | base64 -d",
+      "kubectl describe pod <pod> | grep -i 'secret\\|env'",
+      "kubectl logs <pod> | grep -i 'auth\\|token\\|credential'",
+      "kubectl exec <pod> -- env | grep -i 'password\\|key\\|token'",
+      "kubectl get rolebinding,clusterrolebinding -A | grep <service-account>"
+    ],
+    "recommended_fixes": [
+      "Update Kubernetes secret with correct credentials",
+      "Rotate and redistribute API keys or service account tokens",
+      "Verify JWT signing key is consistent across all instances",
+      "Inspect secret values: kubectl get secret <secret> -o jsonpath=",
+      "Audit RBAC: kubectl auth can-i --list --as=system:serviceaccount:<ns>:<sa>",
+      "Enable secret rotation policies in your secret manager"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "MISSING_CONFIGURATION",
+    "title": "Missing or Invalid Configuration",
+    "category": "CONFIGURATION",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 8,
+    "patterns": [
+      {"match": "missing required environment variable", "weight": 60},
+      {"match": "environment variable not set", "weight": 55},
+      {"match": "config file not found", "weight": 60},
+      {"match": "required configuration", "weight": 45},
+      {"match": "undefined environment variable", "weight": 55},
+      {"match": "mandatory configuration missing", "weight": 60},
+      {"match": "could not load configuration", "weight": 50},
+      {"match": "configuration key not found", "weight": 55},
+      {"match": "Error loading config", "weight": 45}
+    ],
+    "possible_causes": [
+      "ConfigMap or Secret not mounted correctly in the pod spec",
+      "Environment variable name typo in Deployment spec",
+      "Config file path hardcoded to a path that does not exist in the container",
+      "New required config key added to code but not added to the deployment",
+      "Feature flag or toggle not configured for the environment",
+      "Helm values or Kustomize overlay missing a required value"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A20 'Environment\\|Mounts'",
+      "kubectl get configmap <configmap> -o yaml",
+      "kubectl exec <pod> -- env | sort",
+      "kubectl get secret <secret> -o yaml",
+      "kubectl logs <pod> | grep -i 'config\\|env\\|missing'"
+    ],
+    "recommended_fixes": [
+      "Add missing environment variable to the Deployment spec or ConfigMap",
+      "Verify ConfigMap is mounted: kubectl describe pod <pod>",
+      "Audit all required config keys against the deployment manifest",
+      "Use init containers to validate config before app starts",
+      "Apply a linting step in CI/CD to catch missing configs before deploy",
+      "Update Helm values.yaml with the missing configuration entry"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF", "AUTHENTICATION_FAILURE"]
+  },
+  {
+    "id": "DISK_FULL",
+    "title": "Disk / Storage Volume Full",
+    "category": "STORAGE",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 9,
+    "patterns": [
+      {"match": "No space left on device", "weight": 65},
+      {"match": "disk full", "weight": 60},
+      {"match": "ENOSPC", "weight": 60},
+      {"match": "write failed: No space", "weight": 60},
+      {"match": "filesystem is full", "weight": 60},
+      {"match": "not enough disk space", "weight": 55},
+      {"match": "Disk quota exceeded", "weight": 60},
+      {"match": "unable to write: no space", "weight": 55},
+      {"match": "storage volume is full", "weight": 60}
+    ],
+    "possible_causes": [
+      "Log files accumulating without rotation on the PersistentVolume",
+      "Database WAL or binary log files filling the disk",
+      "Container ephemeral storage limit reached",
+      "Insufficient PVC size provisioned for the workload",
+      "Core dump or heap dump files written without cleanup",
+      "Temporary files from batch jobs not cleaned up"
+    ],
+    "verification_steps": [
+      "kubectl exec <pod> -- df -h",
+      "kubectl describe pvc <pvc-name>",
+      "kubectl exec <pod> -- du -sh /* 2>/dev/null | sort -rh | head -20",
+      "kubectl get events | grep -i 'disk\\|storage\\|evict'",
+      "kubectl describe node <node> | grep -i 'storage\\|disk'"
+    ],
+    "recommended_fixes": [
+      "Clear old log files: kubectl exec <pod> -- find /logs -mtime +7 -delete",
+      "Expand PVC size: kubectl patch pvc <pvc> -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"50Gi\"}}}}'",
+      "Enable log rotation with logrotate or structured logging sinks",
+      "Add storage usage alerts to Prometheus/Grafana",
+      "Migrate to a larger storage class or cloud volume",
+      "Implement automatic cleanup jobs for temporary artifacts"
+    ],
+    "causes_incidents": ["DB_CONNECTION_FAILURE"]
+  },
+  {
+    "id": "PERMISSION_DENIED",
+    "title": "Permission Denied — Insufficient Privileges",
+    "category": "SECURITY",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 10,
+    "patterns": [
+      {"match": "Permission denied", "weight": 55},
+      {"match": "EACCES", "weight": 55},
+      {"match": "access is denied", "weight": 55},
+      {"match": "Operation not permitted", "weight": 50},
+      {"match": "EPERM", "weight": 50},
+      {"match": "insufficient privileges", "weight": 55},
+      {"match": "you do not have permission", "weight": 50},
+      {"match": "cannot read file", "weight": 40},
+      {"match": "denied by policy", "weight": 45}
+    ],
+    "possible_causes": [
+      "Container running as non-root but accessing root-owned files",
+      "PVC mounted with incorrect ownership or permissions",
+      "securityContext.readOnlyRootFilesystem blocking writes",
+      "RBAC policy denying the service account the required verb",
+      "PodSecurityPolicy or OPA/Gatekeeper blocking the operation",
+      "File system mounted with noexec or nosuid flags"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A10 'securityContext'",
+      "kubectl exec <pod> -- ls -la <path>",
+      "kubectl exec <pod> -- id",
+      "kubectl auth can-i <verb> <resource> --as=system:serviceaccount:<ns>:<sa>",
+      "kubectl get psp,podsecuritypolicy 2>/dev/null || kubectl get policyexception -A"
+    ],
+    "recommended_fixes": [
+      "Set correct fsGroup and runAsUser in pod securityContext",
+      "Fix PVC permissions: kubectl exec <init-container> -- chown -R <user> <path>",
+      "Update RBAC: kubectl create rolebinding <name> --clusterrole=<role>",
+      "Remove readOnlyRootFilesystem or mount a writable emptyDir",
+      "Add an init container to set correct file ownership before app starts",
+      "Review and update PodSecurityPolicy or OPA constraints"
+    ],
+    "causes_incidents": ["AUTHENTICATION_FAILURE"]
+  }
+]
