@@ -341,11 +341,6 @@ pytest tests/ -v
 
 ---
 
-## 📄 License
-
-MIT
-
----
 
 <div align="center">
 
