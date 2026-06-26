@@ -44,4 +44,3 @@ graph TB
 5. **Optional AI summary**
    - `app/services/ai_summary.py::generate_ai_summary()` optionally calls OpenRouter.
    - Detection logic does not depend on the AI summary.
-
