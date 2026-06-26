@@ -16,26 +16,17 @@
 
 1. [Project Overview](#1-project-overview)
 2. [Problem Statement](#2-problem-statement)
-3. [Why Not Just ChatGPT?](#3-why-not-just-chatgpt)
-4. [Architecture Diagram](#4-architecture-diagram)
-5. [Detection Flow Diagram](#5-detection-flow-diagram)
-6. [Confidence Scoring Logic](#6-confidence-scoring-logic)
-7. [Incident Score vs Confidence](#7-incident-score-vs-confidence)
-8. [Root Cause Ranking Logic](#8-root-cause-ranking-logic)
-9. [DAG Relationship System](#9-dag-relationship-system)
-10. [Evidence Attribution System](#10-evidence-attribution-system)
-11. [Audit Trail System](#11-audit-trail-system)
-12. [API Documentation](#12-api-documentation)
-13. [Database Schema](#13-database-schema)
-14. [Local Setup](#14-local-setup)
-15. [Docker Setup](#15-docker-setup)
-16. [GitHub Actions](#16-github-actions)
-17. [Screenshots](#17-screenshots)
-18. [Incident Blueprint Library](#18-incident-blueprint-library)
-19. [Resume Description](#19-resume-description)
-20. [Interview Questions & Answers](#20-interview-questions--answers)
-21. [Design Tradeoffs](#21-design-tradeoffs)
-22. [Future Improvements](#22-future-improvements)
+3. [Architecture](#3-architecture)
+4. [Implemented Features](#4-implemented-features)
+5. [How It Works](#5-how-it-works)
+6. [API Endpoints](#6-api-endpoints)
+7. [Project Structure](#7-project-structure)
+8. [Setup & Installation](#8-setup--installation)
+9. [Design Decisions](#9-design-decisions)
+10. [Known Limitations](#10-known-limitations)
+11. [Future Improvements](#11-future-improvements)
+
+
 
 ---
 
@@ -95,14 +86,32 @@ Traditional approaches fail:
 
 ---
 
-## 3. Why Not Just ChatGPT?
+## 3. Architecture
 
-This question is central to the engineering philosophy of Deployment Doctor.
+This section describes the actual runtime pipeline implemented in the backend.
 
-### The Core Problem With LLM-Based Log Analysis
+```mermaid
 
+graph TB
+  U[Browser / UI]
+  API[FastAPI Backend]
+  RT[Rule-based Engine]
+  DB[(PostgreSQL)]
+  S[Rules / Blueprints]
+
+  U -->|POST /api/analyze| API
+  API --> RT
+  S -->|loaded at startup| RT
+  RT --> DB
+  U -->|GET /api/results/:id| API
+  API --> DB
+  U -->|GET /api/incidents| API
+  API -->|loads blueprints| S
 ```
+
+
 Input:  5,000 lines of Kubernetes logs
+
 Output: "It looks like there might be a database connectivity issue"
 ```
 
