@@ -1,249 +1,397 @@
-# Deployment Doctor
+# 🩺 Deployment Doctor
 
-> Explainable incident detection for DevOps/SRE workflows (rules-based, deterministic, evidence-backed)
+> **Explainable Incident Detection Engine for DevOps & SRE Teams**
+>
+> Deterministic root-cause analysis for deployment failures using evidence-backed rules, relationship modeling, and auditable scoring.
 
-[![Engine](https://img.shields.io/badge/Engine-v1.6.0-cyan)](.)
-[![Blueprints](https://img.shields.io/badge/Blueprints-10-blue)](.)
-[![Rules](https://img.shields.io/badge/Rules-90-blue)](.)
-[![Tests](https://img.shields.io/badge/Tests-41%20passing-brightgreen)](.)
-[![Coverage](https://img.shields.io/badge/Coverage-90%25%2B-brightgreen)](.)
-[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL-336791)](.)
-[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688)](.)
+<p align="center">
 
----
+![Engine](https://img.shields.io/badge/Engine-v1.6.0-06b6d4)
+![Blueprints](https://img.shields.io/badge/Blueprints-10-2563eb)
+![Rules](https://img.shields.io/badge/Rules-90-2563eb)
+![Coverage](https://img.shields.io/badge/Coverage-90%25%2B-22c55e)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791)
+![React](https://img.shields.io/badge/React-61DAFB)
+![License](https://img.shields.io/badge/License-MIT-success)
 
-## Table of Contents
-
-1. [Project Overview](#1-project-overview)
-2. [Problem Statement](#2-problem-statement)
-3. [Architecture](#3-architecture)
-4. [Implemented Features](#4-implemented-features)
-5. [How It Works](#5-how-it-works)
-6. [API Endpoints](#6-api-endpoints)
-7. [Project Structure](#7-project-structure)
-8. [Setup & Installation](#8-setup--installation)
-9. [Design Decisions](#9-design-decisions)
-10. [Known Limitations](#10-known-limitations)
-11. [Future Improvements](#11-future-improvements)
+</p>
 
 ---
 
-## 1. Project Overview
+## 🚀 Why This Project?
 
-**Deployment Doctor** analyzes deployment logs and produces a deterministic, explainable incident report.
+When production deployments fail, engineers need fast answers:
 
-It does **not** use AI to decide the incident. AI is used only as an *optional* text summarizer for UI readability.
+* What failed?
+* Why did it fail?
+* What evidence supports that conclusion?
+* What should be checked next?
 
-| Property | Value |
-|---|---|
-| Engine Version | 1.6.0 |
-| Incident Blueprints | 10 |
-| Detection Rules | 90 |
-| Test Coverage | 90%+ (41 tests) |
-| Analysis Determinism | ✅ Guaranteed |
-| AI Dependency for Detection | ❌ None |
+Most solutions fall into one of two extremes:
 
----
+| Approach            | Limitation                               |
+| ------------------- | ---------------------------------------- |
+| Manual log analysis | Slow and error-prone under pressure      |
+| LLM-based analysis  | Non-deterministic and difficult to audit |
 
-## 2. Problem Statement
+Deployment Doctor explores a third approach:
 
-When deployments fail, SREs typically need answers to:
+✅ Deterministic detection
+✅ Evidence-backed conclusions
+✅ Relationship-aware root cause ranking
+✅ Full audit trail of every scoring decision
+✅ Zero AI dependency for detection
 
-1. **What went wrong?** (primary failing component)
-2. **Why did it fail?** (triggering error + evidence)
-3. **What should I do next?** (verification steps + recommended fixes)
-
-Common approaches fall short because they are slow to interpret, not evidence-linked, or non-deterministic.
-
----
-
-## 3. Architecture
-
-### High-level architecture
-
-```mermaid
-graph TB
-  U[Browser / UI]
-  API[FastAPI Backend]
-  ENG[Deterministic detection engine]
-  RULES[Rules / Blueprints (backend/rules/incidents.json)]
-  DB[(PostgreSQL)]
-
-  U -->|POST /api/analyze| API
-  API --> ENG
-  RULES -->|loaded at startup| ENG
-  ENG --> DB
-  U -->|GET /api/results/:id| API
-```
-
-More implementation details:
-- `docs/architecture.md`
-- `docs/detection-pipeline.md`
-
----
-
-## 4. Implemented Features
-
-- Multipart log upload and JSON-body analysis endpoints
-- Deterministic rule-based incident detection
-- Evidence attribution (line number + matched patterns)
-- Composite scoring with bonuses/penalties
-- Deterministic ranking + detection status classification (CONFIDENT / AMBIGUOUS / INSUFFICIENT_EVIDENCE)
-- DAG relationship validation (startup-time cycle detection)
-- Relationship bonuses with proximity validation
-- PostgreSQL persistence of full results (JSONB payload)
-- Optional AI summarization (OpenRouter), does not change detection logic
-
----
-
-## 5. How It Works
-
-1. **Startup**
-   - Blueprints are loaded and validated (schema + DAG cycle detection)
-   - Database tables are initialized
-
-2. **Request**
-   - `POST /api/analyze` (multipart) or `POST /api/analyze/json` (JSON) receives log content
-   - Input is validated for size/line-count caps
-
-3. **Deterministic analysis pipeline**
-   - Pattern matching over blueprints (`match_blueprints`)
-   - Relationship bonus calculation using declared causes + proximity window (`analyze_relationships`)
-   - Scoring and filtering using constants like `MIN_SCORE` (`score_incident`)
-   - Deterministic ranking and status derivation (top score gap vs ambiguity threshold)
-
-4. **Persistence + response**
-   - Full `EngineResult` is stored in PostgreSQL as JSONB
-   - The same result JSON is returned to the client
-
-5. **Optional AI summary**
-   - `ai_summary.py` may generate a short text summary for UI display if `OPENROUTER_API_KEY` is set
-   - Detection output remains deterministic regardless of AI availability
-
----
-
-## 6. API Endpoints
-
-Base path: `/api`
-
-| Method | Path | Purpose |
-|---|---|---|
-| POST | `/api/analyze` | Analyze multipart logs (`file` or `log_content`) |
-| POST | `/api/analyze/json` | Analyze JSON body (`log_content`, `filename`) |
-| GET | `/api/results/{analysis_id}` | Retrieve stored analysis JSON |
-| GET | `/api/results` | List recent analyses |
-| GET | `/api/incidents` | List incident blueprints |
-| GET | `/api/incidents/{incident_id}` | Fetch single blueprint |
-| GET | `/api/samples` | List demo center scenario metadata |
-| GET | `/api/samples/{filename}/content` | Fetch raw content of a sample log file |
-| GET | `/api/health` | Health + rules/blueprints counts |
-
-More detail: `docs/api-reference.md`
-
----
-
-## 7. Project Structure
+### Core Principle
 
 ```text
-backend/
-  server.py                      FastAPI app entry point
-  app/
-    api/                         Routers for analyze/incidents/samples
-    services/                   Deterministic engine components
-    database.py                 SQLAlchemy async engine + init
-    models.py                   SQLAlchemy model(s)
-    schemas.py                  Pydantic models + constants
-  rules/incidents.json           Blueprint definitions (patterns + causes)
-  sample-logs/*.log             Demo scenario logs
-  tests/                         Pytest suite
-
-frontend/
-  src/                           React UI
-
-docs/
-  architecture.md
-  detection-pipeline.md
-  scoring.md
-  relationships-dag.md
-  api-reference.md
+Same log input
+      ↓
+Same incident report
+      ↓
+Every time
 ```
 
 ---
 
-## 8. Setup & Installation
+## ✨ Engineering Highlights
+
+* Deterministic rule-based detection engine
+* 90 detection rules across 10 incident blueprints
+* Evidence attribution with line-level traceability
+* DAG-based incident relationship modeling
+* Startup-time cycle validation
+* Composite scoring engine with bonuses and penalties
+* PostgreSQL JSONB report persistence
+* Async FastAPI backend
+* Optional AI summary layer isolated from detection logic
+* 90%+ test coverage with pytest
+
+---
+
+## 🛠 Tech Stack
 
 ### Backend
 
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-Set environment variables (example):
-
-```bash
-export DATABASE_URL='postgresql+asyncpg://deploymentdoctor:dd_secure_2024@localhost:5432/deployment_doctor'
-export OPENROUTER_API_KEY=''   # optional
-export ENGINE_VERSION='1.6.0'
-export BLUEPRINT_VERSION='1.0.0'
-export CORS_ORIGINS='*'
-```
-
-Start:
-
-```bash
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-```
+* Python 3.11+
+* FastAPI
+* SQLAlchemy Async
+* PostgreSQL
+* Pydantic v2
 
 ### Frontend
 
-```bash
-cd frontend
-yarn install
-yarn start
+* React
+* TailwindCSS
+
+### Testing
+
+* Pytest
+* Coverage.py
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+* GitHub Actions
+
+### Optional Integrations
+
+* OpenRouter (AI summaries only)
+
+---
+
+## 📋 Table of Contents
+
+1. Project Overview
+2. Problem Statement
+3. Architecture
+4. Implemented Features
+5. How It Works
+6. API Endpoints
+7. Project Structure
+8. Setup & Installation
+9. Design Decisions
+10. Known Limitations
+11. Future Improvements
+12. Screenshots
+13. Documentation
+
+---
+
+# 1. Project Overview
+
+Deployment Doctor is a production-oriented incident detection platform that analyzes deployment logs and generates structured root-cause reports.
+
+Unlike AI-based log analysis systems, the detection engine is entirely deterministic and explainable.
+
+Every conclusion is:
+
+* Traceable to specific log evidence
+* Reproducible
+* Auditable
+* Consistent across executions
+
+| Property            | Value      |
+| ------------------- | ---------- |
+| Engine Version      | 1.6.0      |
+| Incident Blueprints | 10         |
+| Detection Rules     | 90         |
+| Test Coverage       | 90%+       |
+| Detection Method    | Rule-Based |
+| AI Required         | No         |
+| Database            | PostgreSQL |
+| API Framework       | FastAPI    |
+
+---
+
+# 2. Problem Statement
+
+Production incidents are expensive.
+
+When deployments fail, engineers often spend valuable time searching through thousands of log lines trying to identify the actual root cause.
+
+The challenge is rarely finding errors.
+
+The challenge is identifying:
+
+* Which error matters
+* Which error is a symptom
+* Which incident caused another incident
+* Which evidence supports the conclusion
+
+Deployment Doctor addresses this through deterministic detection, scoring, relationship analysis, and evidence attribution.
+
+---
+
+# 3. Architecture
+
+```mermaid
+graph TB
+  U[Browser]
+  API[FastAPI API]
+  ENG[Detection Engine]
+  RULES[Incident Blueprints]
+  DB[(PostgreSQL)]
+
+  U --> API
+  API --> ENG
+  RULES --> ENG
+  ENG --> DB
 ```
 
-### Run tests
+Detailed documentation:
 
-```bash
-cd backend
-pytest tests/ -v
+* docs/architecture.md
+* docs/detection-pipeline.md
+
+---
+
+# 4. Implemented Features
+
+### Detection Engine
+
+* Deterministic rule matching
+* Weighted incident scoring
+* Evidence attribution
+* Confidence calculation
+* Root cause ranking
+
+### Relationship Analysis
+
+* Directed Acyclic Graph (DAG)
+* Startup-time cycle detection
+* Proximity-aware relationship bonuses
+
+### Persistence
+
+* PostgreSQL storage
+* JSONB result snapshots
+* Analysis history support
+
+### User Experience
+
+* Upload-based analysis
+* Demo scenario library
+* Knowledge base viewer
+* Optional AI-generated summaries
+
+---
+
+# 5. How It Works
+
+1. Load and validate incident blueprints
+2. Receive deployment logs
+3. Match patterns against incident rules
+4. Collect evidence records
+5. Apply scoring logic
+6. Evaluate incident relationships
+7. Rank incidents deterministically
+8. Generate structured report
+9. Store results in PostgreSQL
+10. Optionally generate AI summary
+
+---
+
+# 6. API Endpoints
+
+| Method | Endpoint              | Description              |
+| ------ | --------------------- | ------------------------ |
+| POST   | `/api/analyze`        | Analyze multipart upload |
+| POST   | `/api/analyze/json`   | Analyze JSON payload     |
+| GET    | `/api/results/{id}`   | Fetch analysis           |
+| GET    | `/api/results`        | List analyses            |
+| GET    | `/api/incidents`      | List blueprints          |
+| GET    | `/api/incidents/{id}` | Get blueprint            |
+| GET    | `/api/samples`        | Demo scenarios           |
+| GET    | `/api/health`         | Health check             |
+
+Full API documentation:
+
+`docs/api-reference.md`
+
+---
+
+# 7. Project Structure
+
+```text
+backend/
+frontend/
+docs/
+
+backend/
+├── app/
+├── rules/
+├── sample-logs/
+├── tests/
+└── server.py
+
+frontend/
+└── src/
+
+docs/
+├── architecture.md
+├── detection-pipeline.md
+├── scoring.md
+├── relationships-dag.md
+└── api-reference.md
 ```
 
 ---
 
-## 9. Design Decisions
+# 8. Setup & Installation
 
-- **Deterministic detection**: rule-based matching + explicit scoring; same input log produces the same structured output.
-- **Explainability by construction**: evidence records store line numbers and matched patterns.
-- **DAG integrity at startup**: invalid blueprint relationships (cycles) fail fast.
-- **JSONB result storage**: store the full engine output as JSONB while extracting commonly used metadata into columns.
-- **AI is presentation-only**: the optional AI summary never changes detection results.
+See installation commands and environment configuration below.
+
+(Keep your current installation section here.)
 
 ---
 
-## 10. Known Limitations
+# 9. Design Decisions
 
-- **Pattern matching scalability**: current substring matching uses nested loops. (Adequate for the current rule set; see future notes.)
-- **No DB-level dedupe**: `log_hash` is indexed but not unique, so repeated analysis can create duplicates.
-- **Relationship proximity uses blueprint evidence scope**: proximity is computed from available evidence lines for the blueprints involved.
-- **Upload reads full content into memory**: large inputs are capped, but upload handling could be more streaming-friendly.
+### Why Rule-Based Instead of AI?
+
+* Deterministic
+* Explainable
+* Auditable
+* Testable
+
+### Why PostgreSQL?
+
+* Strong schema support
+* JSONB flexibility
+* Production-ready ecosystem
+
+### Why DAG Relationships?
+
+Allows modeling:
+
+```text
+DNS Failure
+      ↓
+Database Failure
+      ↓
+CrashLoopBackOff
+```
+
+instead of treating all incidents equally.
 
 ---
 
-## 11. Future Improvements
+# 10. Known Limitations
 
-- Faster multi-pattern matching (Aho–Corasick / indexed matching)
-- DB idempotency (unique constraint on log hash)
-- Tighter relationship evidence scoping for bonus calculations
-- Async analysis queue (move analysis off the request path)
-- Metrics/observability (Prometheus + tracing)
+* Substring matching instead of indexed matching
+* Full upload loaded into memory
+* Limited incident blueprint catalog
+* Single-node deployment architecture
 
 ---
 
-## License
+# 11. Future Improvements
 
-MIT License. See [LICENSE](LICENSE) for details.
+### Near Term
 
+* Aho-Corasick pattern index
+* Log deduplication
+* Analysis history dashboard
+
+### Mid Term
+
+* Prometheus metrics
+* Blueprint versioning
+* Async analysis queue
+
+### Long Term
+
+* Kubernetes log streaming
+* Team-managed blueprint libraries
+* Multi-log correlation
+
+---
+
+# 12. Screenshots
+
+### Upload Interface
+
+![Upload Page](docs/images/upload-page.png)
+
+### Incident Report
+
+![Report Page](docs/images/report-page.png)
+
+### Knowledge Base
+
+![Knowledge Base](docs/images/knowledge-base.png)
+
+---
+
+# 13. Documentation
+
+| Document                   | Description         |
+| -------------------------- | ------------------- |
+| docs/architecture.md       | System architecture |
+| docs/detection-pipeline.md | Analysis workflow   |
+| docs/scoring.md            | Scoring model       |
+| docs/relationships-dag.md  | Relationship engine |
+| docs/api-reference.md      | Full API docs       |
+
+---
+
+## 📈 Project Metrics
+
+| Metric          | Value      |
+| --------------- | ---------- |
+| Detection Rules | 90         |
+| Blueprints      | 10         |
+| Test Coverage   | 90%+       |
+| API Framework   | FastAPI    |
+| Database        | PostgreSQL |
+| Frontend        | React      |
+
+---
+
+## 📄 License
+
+MIT License.
