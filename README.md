@@ -291,7 +291,7 @@ deployment-doctor/
 ## 🚀 Quick Start
 
 ```bash
-git clone <repo>
+git clone https://github.com/Guna-Asher/Deployment_Doctor.git
 
 cd backend
 
