@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import ReportPage from './pages/ReportPage';
 import SampleScenariosPage from './pages/SampleScenariosPage';
 import IncidentKnowledgeBasePage from './pages/IncidentKnowledgeBasePage';
+import RelationshipsPage from './pages/RelationshipsPage';
 import './App.css';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/report/:analysisId" element={<ReportPage />} />
           <Route path="/sample-scenarios" element={<SampleScenariosPage />} />
           <Route path="/incidents" element={<IncidentKnowledgeBasePage />} />
+          <Route path="/relationships" element={<RelationshipsPage />} />
         </Routes>
       </DashboardLayout>
     </Router>

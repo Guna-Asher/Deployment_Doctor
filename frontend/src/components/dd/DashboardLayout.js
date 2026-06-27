@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Activity, Terminal, BookOpen, FlaskConical, Menu, X, Cpu, ChevronRight
+  Activity, Terminal, BookOpen, FlaskConical, Menu, X, Cpu, ChevronRight, Network
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Analyze', icon: Activity, testId: 'nav-analyze' },
   { path: '/sample-scenarios', label: 'Demo Center', icon: FlaskConical, testId: 'nav-demo' },
   { path: '/incidents', label: 'Knowledge Base', icon: BookOpen, testId: 'nav-knowledge' },
+  { path: '/relationships', label: 'Cascade Explorer', icon: Network, testId: 'nav-relationships' },
 ];
 
 export default function DashboardLayout({ children }) {
