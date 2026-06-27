@@ -1,7 +1,12 @@
 # Deployment Doctor — PRD
 
 ## Original Problem Statement
-Expand Deployment Doctor's operational knowledge engine by significantly increasing incident blueprints (from 10 to minimum 30), detection rules (from 90 to minimum 300), and demo scenarios (from 11 to minimum 40). Add specific incident categories spanning Kubernetes, Databases, Redis, Kafka, AWS/Cloud, and Networking. Expand the DAG relationship model with new realistic root-cause → symptom chains. Ensure the UI automatically reflects these updates. Ensure all new and existing tests pass. Do NOT redesign the system, add SaaS features (auth/billing), or replace the deterministic engine with AI.
+Build a professional operational knowledge platform for deterministic root-cause analysis of deployment logs. Reposition the product as a premium observability-style tool (Grafana/Datadog-inspired UI), with:
+1. A premium landing page positioning it as "Deterministic Root Cause Analysis"
+2. An upgraded Knowledge Base experience (Operational Knowledge Library)
+3. A Relationship & Cascade Visualization page with interactive directed graph
+
+Strict constraint: Do NOT modify the backend detection engine, scoring logic, rule matching, or backend architecture. Preserve API contracts and deterministic behavior.
 
 ---
 
@@ -17,15 +22,22 @@ Expand Deployment Doctor's operational knowledge engine by significantly increas
 │   │   │   └── scoring_engine.py
 │   │   ├── models.py, schemas.py, database.py
 │   ├── rules/
-│   │   └── incidents.json       — Source of truth: 38 blueprints, 445 rules
+│   │   └── incidents.json       — Source of truth: 38 blueprints, 445 rules, 53 DAG edges
 │   ├── sample-logs/             — 50 demo log files (01-50)
 │   ├── tests/
 │   │   └── test_engine.py       — 70 tests (all passing)
 │   ├── server.py, Dockerfile
 │   └── .env                     — MONGO_URL, DB_NAME, DATABASE_URL
 ├── frontend/src/
-│   ├── components/dd/
-│   └── pages/
+│   ├── components/dd/           — DashboardLayout, IncidentGraph, etc.
+│   ├── pages/
+│   │   ├── HomePage.js          — Landing page (redesigned)
+│   │   ├── IncidentKnowledgeBasePage.js  — Knowledge Library (upgraded)
+│   │   ├── RelationshipsPage.js — Cascade Explorer (NEW)
+│   │   ├── SampleScenariosPage.js
+│   │   └── ReportPage.js
+│   ├── App.js                   — Routes (4 pages + /relationships)
+│   └── index.css                — ReactFlow overrides + base theme
 ├── AUDIT_REPORT.md
 └── memory/PRD.md
 ```
@@ -34,7 +46,10 @@ Expand Deployment Doctor's operational knowledge engine by significantly increas
 
 ## Tech Stack
 - **Backend**: FastAPI + PostgreSQL (SQLAlchemy/asyncpg) + MongoDB + Python 3.11
-- **Frontend**: React + Tailwind CSS (dark theme)
+- **Frontend**: React 19 + Tailwind CSS + Manrope/JetBrains Mono fonts
+- **Graph viz**: @xyflow/react v12.11.1 (ReactFlow)
+- **Charts**: recharts v3.6.0 (already installed)
+- **Animations**: framer-motion v11 (available)
 - **Engine**: Deterministic rule-based pattern matching, DAG relationship validation
 - **Testing**: pytest (70 tests)
 
@@ -44,77 +59,79 @@ Expand Deployment Doctor's operational knowledge engine by significantly increas
 
 ### Session 1 (Audit)
 - Generated comprehensive 18-section AUDIT_REPORT.md
-- Understood full codebase architecture
 
 ### Session 2 (Knowledge Expansion) — 2026-06-27
-**incidents.json expansion:**
-- 10 → 38 blueprints (+28 new)
-- 90 → 445 rules/patterns (+355)
-- New categories: APPLICATION (2), CONFIGURATION (2), KUBERNETES (6), DATABASE (4), CACHE (3), MESSAGING (3), CLOUD (4), NETWORKING (6, including TLS/DNS)
+- 10 → 38 blueprints, 90 → 445 rules, 11 → 50 demo scenarios
+- 53 DAG edges (multi-hop chains)
+- 70/70 backend tests passing
 
-**New blueprints added:**
-APPLICATION_STARTUP_FAILURE, CONFIGURATION_VALIDATION_FAILURE, POD_PENDING, NODE_NOT_READY, RESOURCE_QUOTA_EXCEEDED, POD_EVICTED, LIVENESS_PROBE_FAILURE, READINESS_PROBE_FAILURE, DB_DEADLOCK, DB_SLOW_QUERY, DB_MIGRATION_FAILURE, DB_REPLICATION_LAG, REDIS_OOM, REDIS_CONNECTION_TIMEOUT, REDIS_REPLICATION_BROKEN, CONSUMER_LAG, MESSAGE_BROKER_DOWN, QUEUE_FULL, CLOUD_IAM_DENIED, OBJECT_STORAGE_ACCESS_FAILURE, CLOUD_RATE_LIMIT, CAPACITY_EXCEEDED, SSL_TLS_CERTIFICATE_EXPIRED, TLS_HANDSHAKE_FAILURE, NETWORK_TIMEOUT, HTTP_GATEWAY_ERROR, SERVICE_CIRCUIT_BREAKER_OPEN, LOAD_BALANCER_UNHEALTHY
+### Session 3 (UI Overhaul) — 2026-06-27
+**Part 1 — Landing Page Repositioning (HomePage.js)**
+- Hero: "Deterministic Root Cause Analysis" headline, left-aligned layout
+- Engine status badge (pulse animation)
+- 5 animated metric counters: 38 Blueprints, 445 Rules, 53 Edges, 50 Scenarios, 70 Tests
+- Upload zone preserved (functionality unchanged)
+- "How It Works" 3-step row (Upload → Rules → Cascade)
+- 4 Value Props: Explainability, Auditability, Reproducibility, No Hallucinations
 
-**Existing blueprints updated (causes_incidents extended):**
-- DNS_FAILURE → added TLS_HANDSHAKE_FAILURE
-- DISK_FULL → added MESSAGE_BROKER_DOWN
-- MISSING_CONFIGURATION → added APPLICATION_STARTUP_FAILURE
+**Part 2 — Knowledge Base Upgrade (IncidentKnowledgeBasePage.js)**
+- Header: "Operational Knowledge Library" with live stats
+- Recharts horizontal BarChart — rules per category with per-category colors
+- Category filter pills (ALL + 11 categories) with blueprint counts
+- Enhanced blueprint rows: severity badge, category tag, rule count, → children count, ← parent count
+- Expanded detail: parent incidents, child incidents prominently at top
+- Verification commands + recommended fixes
+- Footer metadata (role, priority, max score, relationship count)
 
-**DAG relationships (53 total edges, no cycles):**
-Multi-hop chains include:
-- DISK_FULL → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF (3-hop)
-- DB_SLOW_QUERY → DB_DEADLOCK → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
-- REDIS_REPLICATION_BROKEN → REDIS_CONNECTION_TIMEOUT → CRASH_LOOP_BACKOFF (3-hop)
-- SSL_TLS_CERTIFICATE_EXPIRED → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE (3-hop)
-- CLOUD_IAM_DENIED → OBJECT_STORAGE_ACCESS_FAILURE → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
-- CONFIGURATION_VALIDATION_FAILURE → MISSING_CONFIGURATION → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
-- NETWORK_TIMEOUT → SERVICE_CIRCUIT_BREAKER_OPEN → HTTP_GATEWAY_ERROR (3-hop)
-- DNS_FAILURE → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE (3-hop)
-- QUEUE_FULL → MESSAGE_BROKER_DOWN → CONSUMER_LAG (3-hop)
-- NODE_NOT_READY → POD_EVICTED → CRASH_LOOP_BACKOFF (3-hop)
-- RESOURCE_QUOTA_EXCEEDED → POD_EVICTED → CRASH_LOOP_BACKOFF (3-hop)
+**Part 3 — Cascade Explorer (RelationshipsPage.js — NEW)**
+- Route: /relationships, nav: "Cascade Explorer" with Network icon
+- @xyflow/react v12 for interactive DAG visualization
+- 38 custom nodes, 53 edges, topological layout algorithm (no external dagre)
+- Node roles (computed from graph topology):
+  - Root Cause (21 nodes): orange border/bg
+  - Intermediate (11 nodes): amber border/bg
+  - Symptom (6 nodes): cyan border/bg
+- Header stats: Root Causes 21 · Intermediates 11 · Symptoms 6 · Edges 53
+- Left panel: Search (dims non-matching), Role filter, Scenario Overlay, Legend, Node Detail
+- Scenario Overlay: select 1 of 50 scenarios → calls /api/analyze → highlights detected nodes with glow + animated edges, fades undetected to 15% opacity
+- Node click: shows parents/children in detail panel (clickable to navigate)
+- MiniMap, Controls, Background dots
 
-**Demo log files:**
-- 11 → 50 scenarios (+39)
-- 28 single-incident logs (12–39)
-- 11 multi-hop cascade logs (40–50)
-- samples.py SCENARIOS registry updated to all 50
-
-**Tests:**
-- 41 → 70 tests (+29 new tests)
-- All 70 pass
-- New test classes: TestBlueprintValidation (expanded), TestNewCategoryAcceptance, TestMultiHopCascadeAcceptance
-
-**Infrastructure fix:**
-- Installed and configured PostgreSQL 15 (required by backend init_db)
-- Created user/database: deploymentdoctor / deployment_doctor
+**Infrastructure**
+- yarn add @xyflow/react (v12.11.1)
+- index.css: ReactFlow dark theme overrides
+- DashboardLayout.js: Added "Cascade Explorer" nav item
+- App.js: Added /relationships route
 
 ---
 
 ## Final Metrics
 
-| Metric | Before | After | Target | Status |
-|--------|--------|-------|--------|--------|
-| Blueprints | 10 | 38 | ≥ 30 | ✅ |
-| Rules/Patterns | 90 | 445 | ≥ 300 | ✅ |
-| Demo Scenarios | 11 | 50 | ≥ 40 | ✅ |
-| Multi-hop chains | 2 | 12+ | ≥ 10 | ✅ |
-| Tests passing | 41 | 70 | All pass | ✅ |
+| Metric | Value | Status |
+|--------|-------|--------|
+| Blueprints | 38 | ✅ |
+| Rules/Patterns | 445 | ✅ |
+| Demo Scenarios | 50 | ✅ |
+| DAG Edges | 53 | ✅ |
+| Tests passing | 70 | ✅ |
+| Frontend test pass rate | 97% | ✅ |
 
 ---
 
 ## Constraints Preserved
 - No .py engine files rewritten
-- No React components modified
-- No SaaS features added (no auth/billing)
+- No SaaS features added
 - Deterministic engine behavior unchanged
 - API contracts unchanged (/api/analyze, /api/incidents, /api/samples)
+- All 70 backend tests still passing
 
 ---
 
 ## Backlog / Future Work
-- P1: Add unit tests for DAG cycle detection on the new blueprints specifically
-- P1: Add vendor-specific sub-patterns (e.g., separate Postgres vs MySQL patterns)
-- P2: Build a "guided walkthrough" mode in the Demo Center showing multi-hop cascades
+- P1: Add unit tests for DAG cycle detection on new blueprints specifically
+- P1: Add vendor-specific sub-patterns (e.g., Postgres vs MySQL patterns)
+- P2: Exportable incident reports (PDF/JSON) from the Analyze page
+- P2: Build a "guided walkthrough" mode showing multi-hop cascade step-by-step in the Cascade Explorer
 - P2: Add confidence score explanations per pattern matched
-- P3: Exportable incident reports (PDF/JSON) from the Analyze page
+- P3: Permalink/sharable URLs for specific graph states (selected node, active scenario)
+- P3: Timeline view for multi-hop cascades showing propagation order

@@ -108,8 +108,8 @@ export default function IncidentKnowledgeBasePage() {
       {categoryStats.length > 0 && (
         <div className="border-b border-[#2d313a] bg-[#0d0f16] px-6 py-5">
           <div className="text-[10px] text-slate-600 uppercase tracking-widest font-mono-code mb-3">Rules per Category</div>
-          <div style={{ height: 160 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 160, width: '100%', minWidth: 1 }}>
+            <ResponsiveContainer width="100%" height={160}>
               <BarChart
                 data={categoryStats}
                 layout="vertical"
