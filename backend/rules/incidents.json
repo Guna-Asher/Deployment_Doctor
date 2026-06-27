@@ -83,7 +83,7 @@
       "Verify DNS policy in pod spec: dnsPolicy: ClusterFirst",
       "Check network policies blocking port 53: kubectl get networkpolicies -A"
     ],
-    "causes_incidents": ["DB_CONNECTION_FAILURE", "IMAGE_PULL_FAILURE"]
+    "causes_incidents": ["DB_CONNECTION_FAILURE", "IMAGE_PULL_FAILURE", "TLS_HANDSHAKE_FAILURE"]
   },
   {
     "id": "PORT_CONFLICT",
@@ -341,7 +341,7 @@
       "Apply a linting step in CI/CD to catch missing configs before deploy",
       "Update Helm values.yaml with the missing configuration entry"
     ],
-    "causes_incidents": ["CRASH_LOOP_BACKOFF", "AUTHENTICATION_FAILURE"]
+    "causes_incidents": ["CRASH_LOOP_BACKOFF", "AUTHENTICATION_FAILURE", "APPLICATION_STARTUP_FAILURE"]
   },
   {
     "id": "DISK_FULL",
@@ -384,7 +384,7 @@
       "Migrate to a larger storage class or cloud volume",
       "Implement automatic cleanup jobs for temporary artifacts"
     ],
-    "causes_incidents": ["DB_CONNECTION_FAILURE"]
+    "causes_incidents": ["DB_CONNECTION_FAILURE", "MESSAGE_BROKER_DOWN"]
   },
   {
     "id": "PERMISSION_DENIED",
@@ -428,5 +428,1312 @@
       "Review and update PodSecurityPolicy or OPA constraints"
     ],
     "causes_incidents": ["AUTHENTICATION_FAILURE"]
+  },
+  {
+    "id": "APPLICATION_STARTUP_FAILURE",
+    "title": "Application Startup Failure",
+    "category": "APPLICATION",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 11,
+    "patterns": [
+      {"match": "application failed to start", "weight": 55},
+      {"match": "startup failed", "weight": 50},
+      {"match": "failed to initialize", "weight": 45},
+      {"match": "application startup error", "weight": 55},
+      {"match": "server failed to start", "weight": 50},
+      {"match": "bootstrap failed", "weight": 50},
+      {"match": "unable to start application", "weight": 50},
+      {"match": "application context failed", "weight": 52},
+      {"match": "failed to load application", "weight": 50},
+      {"match": "process exited during startup", "weight": 50},
+      {"match": "fatal error during initialization", "weight": 55},
+      {"match": "application did not start successfully", "weight": 55},
+      {"match": "service initialization failed", "weight": 50},
+      {"match": "main process crashed on boot", "weight": 55}
+    ],
+    "possible_causes": [
+      "Missing required dependencies or services unavailable at startup time",
+      "Invalid configuration preventing application initialization",
+      "External service (database, cache, message broker) not reachable on first connect",
+      "Incompatible library versions causing import or linking errors",
+      "Missing or corrupted startup files, certificates, or migration scripts",
+      "Port binding failure or OS-level resource exhaustion at launch"
+    ],
+    "verification_steps": [
+      "kubectl logs <pod> --previous --tail=200",
+      "kubectl describe pod <pod> | grep -A5 'State\\|Exit'",
+      "kubectl get events --field-selector involvedObject.name=<pod>",
+      "kubectl exec <pod> -- env | sort",
+      "kubectl describe pod <pod> | grep -A10 'Init Containers'"
+    ],
+    "recommended_fixes": [
+      "Inspect startup logs: kubectl logs <pod> --previous",
+      "Add an init container to wait for all dependencies before app starts",
+      "Verify all required environment variables are set in the Deployment",
+      "Check that required config files and secrets are correctly mounted",
+      "Add startup probes with suitable failureThreshold and periodSeconds",
+      "Enable structured logging from the first line to capture init errors early"
+    ],
+    "causes_incidents": ["READINESS_PROBE_FAILURE", "CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "CONFIGURATION_VALIDATION_FAILURE",
+    "title": "Configuration Validation Failure",
+    "category": "CONFIGURATION",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 12,
+    "patterns": [
+      {"match": "configuration validation failed", "weight": 60},
+      {"match": "invalid configuration value", "weight": 55},
+      {"match": "config schema validation error", "weight": 55},
+      {"match": "required field missing in config", "weight": 55},
+      {"match": "failed to validate configuration", "weight": 55},
+      {"match": "configuration parse error", "weight": 50},
+      {"match": "invalid config format", "weight": 50},
+      {"match": "schema validation failed", "weight": 50},
+      {"match": "config sanity check failed", "weight": 55},
+      {"match": "configuration error: invalid", "weight": 50},
+      {"match": "yaml: unmarshal error", "weight": 45},
+      {"match": "toml: parse error", "weight": 45},
+      {"match": "json schema validation error", "weight": 50},
+      {"match": "env var has invalid value", "weight": 50}
+    ],
+    "possible_causes": [
+      "ConfigMap or Helm values contain syntactically invalid YAML or JSON",
+      "A required config field has a value outside the permitted range or type",
+      "Config schema was updated but the ConfigMap was not re-applied",
+      "Secrets contain unexpected encoding or trailing whitespace in values",
+      "Feature flag configuration references an undefined toggle",
+      "Environment-specific override file missing or malformed"
+    ],
+    "verification_steps": [
+      "kubectl get configmap <name> -o yaml | yamllint -",
+      "kubectl logs <pod> | grep -i 'config\\|validation\\|parse\\|schema'",
+      "kubectl exec <pod> -- env | sort",
+      "helm lint <chart-dir> --values <values-file>",
+      "kubectl describe pod <pod> | grep -A20 'Environment'"
+    ],
+    "recommended_fixes": [
+      "Validate ConfigMap YAML: kubectl get configmap <name> -o yaml | yamllint -",
+      "Fix the offending configuration value identified in the startup logs",
+      "Re-apply the corrected ConfigMap: kubectl apply -f configmap.yaml",
+      "Add a CI/CD config validation step to catch schema errors before deploy",
+      "Use a config management library with strict schema validation at boot",
+      "Audit all Secret values for encoding issues: kubectl get secret -o jsonpath"
+    ],
+    "causes_incidents": ["APPLICATION_STARTUP_FAILURE", "MISSING_CONFIGURATION"]
+  },
+  {
+    "id": "POD_PENDING",
+    "title": "Pod Stuck in Pending State",
+    "category": "KUBERNETES",
+    "severity": "WARNING",
+    "incident_role": "symptom",
+    "priority": 13,
+    "patterns": [
+      {"match": "pod status: Pending", "weight": 55},
+      {"match": "0/1 nodes are available", "weight": 60},
+      {"match": "insufficient cpu", "weight": 55},
+      {"match": "insufficient memory", "weight": 55},
+      {"match": "no nodes available to schedule pods", "weight": 60},
+      {"match": "pod has been in pending state", "weight": 55},
+      {"match": "FailedScheduling", "weight": 60},
+      {"match": "Unschedulable", "weight": 55},
+      {"match": "did not match node selector", "weight": 50},
+      {"match": "taints that the pod did not tolerate", "weight": 55},
+      {"match": "pod cannot be scheduled", "weight": 55},
+      {"match": "PodScheduled False", "weight": 50}
+    ],
+    "possible_causes": [
+      "Cluster nodes lack sufficient CPU or memory to host the pod",
+      "Node selectors or affinity rules have no matching nodes",
+      "Node taints are not tolerated by the pod spec",
+      "PersistentVolumeClaim is not bound (Pending PVC)",
+      "ResourceQuota in the namespace is exhausted",
+      "Node is cordoned or under maintenance"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A10 'Events\\|Conditions'",
+      "kubectl get nodes -o wide",
+      "kubectl describe node <node> | grep -A10 'Allocatable\\|Allocated'",
+      "kubectl get pvc -n <namespace>",
+      "kubectl get resourcequota -n <namespace>"
+    ],
+    "recommended_fixes": [
+      "Add more nodes or resize existing ones to provide required capacity",
+      "Adjust node selector or affinity rules to match available nodes",
+      "Add tolerations to the pod spec for existing node taints",
+      "Ensure the PVC is correctly provisioned and bound",
+      "Check and increase ResourceQuota limits: kubectl edit resourcequota <name>",
+      "Uncordon the target node: kubectl uncordon <node>"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "NODE_NOT_READY",
+    "title": "Node Not Ready",
+    "category": "KUBERNETES",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 14,
+    "patterns": [
+      {"match": "node status: NotReady", "weight": 60},
+      {"match": "NodeNotReady", "weight": 60},
+      {"match": "node is not ready", "weight": 55},
+      {"match": "kubelet stopped posting node status", "weight": 55},
+      {"match": "node condition: Ready=False", "weight": 60},
+      {"match": "node condition: Ready=Unknown", "weight": 55},
+      {"match": "node heartbeat has expired", "weight": 55},
+      {"match": "failed to get node lease", "weight": 50},
+      {"match": "node controller evicting pods", "weight": 50},
+      {"match": "kubelet has not checked in with the API server", "weight": 55},
+      {"match": "NodeCondition Ready is Unknown", "weight": 55},
+      {"match": "node is unreachable", "weight": 50},
+      {"match": "taint node.kubernetes.io/not-ready", "weight": 55}
+    ],
+    "possible_causes": [
+      "Kubelet process has crashed or been OOMKilled on the node",
+      "Node is experiencing hardware or hypervisor failure",
+      "Network partition isolating the node from the control plane",
+      "Node disk pressure or memory pressure triggering NotReady condition",
+      "containerd or Docker runtime on the node has crashed",
+      "Cloud provider instance failure or unexpected maintenance event"
+    ],
+    "verification_steps": [
+      "kubectl get nodes -o wide",
+      "kubectl describe node <node> | grep -A15 'Conditions'",
+      "kubectl get events --field-selector involvedObject.name=<node>",
+      "ssh <node> systemctl status kubelet",
+      "ssh <node> journalctl -u kubelet --tail=100"
+    ],
+    "recommended_fixes": [
+      "Drain and cordon the node: kubectl drain <node> --ignore-daemonsets",
+      "SSH to the node and restart kubelet: systemctl restart kubelet",
+      "Inspect node resource usage: kubectl describe node <node>",
+      "Replace the failing node in managed node groups via cloud console",
+      "Check containerd/Docker daemon: systemctl status containerd",
+      "Increase cluster autoscaler budget if node pool is under-capacity"
+    ],
+    "causes_incidents": ["POD_EVICTED", "POD_PENDING"]
+  },
+  {
+    "id": "RESOURCE_QUOTA_EXCEEDED",
+    "title": "Kubernetes ResourceQuota Exceeded",
+    "category": "KUBERNETES",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 15,
+    "patterns": [
+      {"match": "exceeded quota", "weight": 60},
+      {"match": "resource quota exceeded", "weight": 60},
+      {"match": "pods is forbidden: exceeded quota", "weight": 65},
+      {"match": "cpu resource quota", "weight": 50},
+      {"match": "memory resource quota", "weight": 50},
+      {"match": "ResourceQuota", "weight": 45},
+      {"match": "would exceed resourcequota", "weight": 60},
+      {"match": "namespace resource quota", "weight": 55},
+      {"match": "quota.pods", "weight": 45},
+      {"match": "limits.cpu", "weight": 40},
+      {"match": "requests.memory", "weight": 40},
+      {"match": "forbidden: exceeded quota", "weight": 60}
+    ],
+    "possible_causes": [
+      "Namespace resource quota limits were set too low for current workload",
+      "Sudden scale-out increased pod count beyond quota.pods limit",
+      "Accumulated stale or failed pods not cleaned up consuming quota",
+      "CPU or memory requests in pod specs too high relative to quota",
+      "Multiple teams sharing a namespace competing for the same quota",
+      "HPA scaled replicas beyond quota before limits were adjusted"
+    ],
+    "verification_steps": [
+      "kubectl get resourcequota -n <namespace> -o yaml",
+      "kubectl describe resourcequota -n <namespace>",
+      "kubectl get pods -n <namespace> --field-selector=status.phase=Failed",
+      "kubectl top pods -n <namespace>",
+      "kubectl get events -n <namespace> | grep quota"
+    ],
+    "recommended_fixes": [
+      "Increase the namespace quota: kubectl edit resourcequota <name> -n <namespace>",
+      "Clean up failed or completed pods to release quota",
+      "Reduce CPU/memory requests in pod specs to lower quota consumption",
+      "Split workloads into separate namespaces with dedicated quotas",
+      "Review and set LimitRange to cap per-pod resource requests",
+      "Align HPA maxReplicas with namespace quota headroom"
+    ],
+    "causes_incidents": ["POD_PENDING", "POD_EVICTED"]
+  },
+  {
+    "id": "POD_EVICTED",
+    "title": "Pod Evicted — Node Pressure",
+    "category": "KUBERNETES",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 16,
+    "patterns": [
+      {"match": "pod evicted", "weight": 60},
+      {"match": "The node was low on resource", "weight": 55},
+      {"match": "Evicted", "weight": 50},
+      {"match": "eviction threshold has been met", "weight": 60},
+      {"match": "node disk pressure", "weight": 55},
+      {"match": "node memory pressure", "weight": 55},
+      {"match": "DiskPressure", "weight": 55},
+      {"match": "MemoryPressure", "weight": 55},
+      {"match": "pod eviction triggered", "weight": 60},
+      {"match": "evicted due to disk pressure", "weight": 60},
+      {"match": "soft eviction threshold", "weight": 50},
+      {"match": "hard eviction threshold", "weight": 55},
+      {"match": "Preempted to make room", "weight": 50}
+    ],
+    "possible_causes": [
+      "Node disk usage crossed the kubelet eviction threshold",
+      "Node memory pressure caused the kubelet to evict lower-priority pods",
+      "PodDisruptionBudget constraints caused involuntary disruption",
+      "Cluster autoscaler preempted the pod for a higher-priority workload",
+      "Ephemeral storage limit in the pod spec was exceeded",
+      "Node running too many pods, causing memory or disk saturation"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A5 'Reason\\|Message'",
+      "kubectl get events -n <namespace> | grep -i 'evict\\|pressure'",
+      "kubectl describe node <node> | grep -A10 'Conditions\\|Pressure'",
+      "kubectl exec <node-debug-pod> -- df -h",
+      "kubectl top nodes"
+    ],
+    "recommended_fixes": [
+      "Free disk space on the node: clean images, logs, tmp files",
+      "Increase node memory or disk resources in your node pool",
+      "Set resource requests and limits to allow proper scheduling",
+      "Use PodPriorityClass to protect critical workloads from eviction",
+      "Enable cluster autoscaler to prevent node saturation",
+      "Configure ephemeral-storage limits in the pod spec"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "LIVENESS_PROBE_FAILURE",
+    "title": "Liveness Probe Failure",
+    "category": "KUBERNETES",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 17,
+    "patterns": [
+      {"match": "Liveness probe failed", "weight": 60},
+      {"match": "liveness probe failing", "weight": 55},
+      {"match": "container failed liveness probe", "weight": 55},
+      {"match": "liveness: HTTP probe failed", "weight": 60},
+      {"match": "liveness: exec probe failed", "weight": 60},
+      {"match": "liveness: TCP probe failed", "weight": 55},
+      {"match": "Killing container with id", "weight": 45},
+      {"match": "Container killed by liveness", "weight": 55},
+      {"match": "liveness probe returned", "weight": 50},
+      {"match": "unhealthy after liveness probe", "weight": 55},
+      {"match": "exceeded liveness probe threshold", "weight": 55},
+      {"match": "restarting container due to liveness probe failure", "weight": 60},
+      {"match": "probe failure: liveness", "weight": 55}
+    ],
+    "possible_causes": [
+      "Application entered a deadlocked or non-responsive state",
+      "Liveness probe endpoint is too slow relative to the timeout setting",
+      "Application is overloaded and cannot respond to health checks in time",
+      "Liveness probe path was changed in code but not in the pod spec",
+      "Insufficient initialDelaySeconds causing probe to run before app is ready",
+      "Out-of-memory condition causing health-check handler to fail"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A20 'Liveness\\|Events'",
+      "kubectl logs <pod> --previous | grep -i 'health\\|probe\\|alive'",
+      "kubectl exec <pod> -- curl -s http://localhost:<port><probe-path>",
+      "kubectl get events | grep -i 'unhealthy\\|liveness'",
+      "kubectl top pod <pod> --containers"
+    ],
+    "recommended_fixes": [
+      "Increase initialDelaySeconds to give the application more startup time",
+      "Tune timeoutSeconds and failureThreshold to allow transient slowness",
+      "Verify probe path/port match the running application configuration",
+      "Switch to a lightweight health-check endpoint not blocked by app logic",
+      "Investigate thread deadlocks or GC pause times in application logs",
+      "Add more memory headroom to prevent OOM conditions affecting health checks"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "READINESS_PROBE_FAILURE",
+    "title": "Readiness Probe Failure — Pod Removed from Service",
+    "category": "KUBERNETES",
+    "severity": "WARNING",
+    "incident_role": "symptom",
+    "priority": 18,
+    "patterns": [
+      {"match": "Readiness probe failed", "weight": 55},
+      {"match": "readiness probe failing", "weight": 50},
+      {"match": "container failed readiness probe", "weight": 55},
+      {"match": "readiness: HTTP probe failed", "weight": 55},
+      {"match": "readiness: exec probe failed", "weight": 55},
+      {"match": "pod not ready", "weight": 45},
+      {"match": "endpoint not ready", "weight": 50},
+      {"match": "pod is not ready", "weight": 50},
+      {"match": "failed readiness check", "weight": 55},
+      {"match": "unhealthy after readiness probe", "weight": 50},
+      {"match": "readiness probe returned failure", "weight": 55},
+      {"match": "removing pod from service endpoints", "weight": 50}
+    ],
+    "possible_causes": [
+      "Application startup is still in progress (dependency connections pending)",
+      "Underlying service dependency (database, cache) is not reachable",
+      "Readiness probe endpoint returns non-2xx during initialization",
+      "Application failed to start but container is still running",
+      "Incorrect readiness probe path, port, or scheme configured",
+      "Transient overload causing the app to temporarily fail health checks"
+    ],
+    "verification_steps": [
+      "kubectl describe pod <pod> | grep -A20 'Readiness\\|Events'",
+      "kubectl logs <pod> | grep -i 'ready\\|health\\|probe'",
+      "kubectl exec <pod> -- curl -sv http://localhost:<port><probe-path>",
+      "kubectl get endpoints <service>",
+      "kubectl get events -n <namespace> | grep 'Unhealthy'"
+    ],
+    "recommended_fixes": [
+      "Increase initialDelaySeconds on the readiness probe",
+      "Verify the readiness probe path matches the actual healthcheck route",
+      "Fix the underlying dependency (database, cache) causing the probe to fail",
+      "Check if the app is actually running: kubectl exec <pod> -- ps aux",
+      "Review endpoint registration: kubectl describe endpoints <service>",
+      "Separate readiness probe (dependency check) from liveness probe (alive check)"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "DB_DEADLOCK",
+    "title": "Database Deadlock Detected",
+    "category": "DATABASE",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 19,
+    "patterns": [
+      {"match": "deadlock detected", "weight": 65},
+      {"match": "deadlock found when trying to get lock", "weight": 65},
+      {"match": "lock wait timeout exceeded", "weight": 60},
+      {"match": "transaction deadlock", "weight": 60},
+      {"match": "could not serialize access due to concurrent update", "weight": 55},
+      {"match": "waiting for lock on transaction", "weight": 50},
+      {"match": "lock timeout", "weight": 50},
+      {"match": "detected deadlock while waiting for lock", "weight": 65},
+      {"match": "ERROR: deadlock", "weight": 65},
+      {"match": "transaction rolled back due to deadlock", "weight": 60},
+      {"match": "row level lock timeout", "weight": 55},
+      {"match": "lock conflict detected", "weight": 50}
+    ],
+    "possible_causes": [
+      "Multiple transactions acquiring locks in inconsistent ordering",
+      "Long-running transactions holding locks under high concurrency",
+      "Missing indexes causing full-table locks on UPDATE or DELETE",
+      "Application using SELECT FOR UPDATE without proper transaction scoping",
+      "Bulk data migrations running concurrently with production traffic",
+      "Inefficient ORM-generated queries holding row locks unnecessarily"
+    ],
+    "verification_steps": [
+      "SELECT * FROM pg_stat_activity WHERE wait_event_type = 'Lock'",
+      "SHOW ENGINE INNODB STATUS\\G (MySQL)",
+      "SELECT * FROM information_schema.INNODB_TRX",
+      "kubectl logs <db-pod> | grep -i 'deadlock\\|lock wait'",
+      "EXPLAIN ANALYZE <slow-query> to identify missing indexes"
+    ],
+    "recommended_fixes": [
+      "Enforce a consistent lock acquisition order across all transactions",
+      "Add database indexes to reduce full-table scans under concurrent load",
+      "Set a statement_timeout to abort long-running blocking transactions",
+      "Use optimistic locking or MVCC instead of SELECT FOR UPDATE where possible",
+      "Reduce transaction scope to hold locks for the shortest possible duration",
+      "Monitor pg_locks / InnoDB lock waits and alert on threshold exceeded"
+    ],
+    "causes_incidents": ["DB_CONNECTION_FAILURE"]
+  },
+  {
+    "id": "DB_SLOW_QUERY",
+    "title": "Database Slow Query / Statement Timeout",
+    "category": "DATABASE",
+    "severity": "WARNING",
+    "incident_role": "root_cause",
+    "priority": 20,
+    "patterns": [
+      {"match": "slow query", "weight": 55},
+      {"match": "long running query", "weight": 55},
+      {"match": "query execution time exceeded", "weight": 60},
+      {"match": "query timeout", "weight": 55},
+      {"match": "statement timeout", "weight": 55},
+      {"match": "max_execution_time exceeded", "weight": 60},
+      {"match": "canceling statement due to statement timeout", "weight": 65},
+      {"match": "query took too long", "weight": 55},
+      {"match": "slow log: query exceeded", "weight": 55},
+      {"match": "execution plan warning", "weight": 45},
+      {"match": "full table scan detected", "weight": 50},
+      {"match": "missing index causing full scan", "weight": 50},
+      {"match": "query duration exceeded threshold", "weight": 55}
+    ],
+    "possible_causes": [
+      "Missing database indexes causing full table scans on large tables",
+      "Unbounded query result set fetching millions of rows without pagination",
+      "Outdated table statistics causing the query planner to pick bad plans",
+      "N+1 query pattern generated by ORM without eager loading",
+      "Database under memory pressure causing disk-based sort or hash operations",
+      "Inefficient join ordering or missing composite index"
+    ],
+    "verification_steps": [
+      "EXPLAIN ANALYZE <query> to inspect the execution plan",
+      "SELECT * FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10",
+      "SELECT * FROM information_schema.PROCESSLIST WHERE TIME > 5 (MySQL)",
+      "kubectl logs <db-pod> | grep -i 'slow\\|timeout\\|long'",
+      "ANALYZE <table>; to refresh statistics"
+    ],
+    "recommended_fixes": [
+      "Add the missing index identified by EXPLAIN ANALYZE",
+      "Run ANALYZE on affected tables to update planner statistics",
+      "Add LIMIT or pagination to queries returning unbounded result sets",
+      "Enable slow query log: log_min_duration_statement = 1000 (ms)",
+      "Refactor ORM queries to use eager loading (JOIN FETCH / includes)",
+      "Partition large tables to reduce per-query scan ranges"
+    ],
+    "causes_incidents": ["DB_DEADLOCK", "DB_CONNECTION_FAILURE"]
+  },
+  {
+    "id": "DB_MIGRATION_FAILURE",
+    "title": "Database Migration / Schema Change Failure",
+    "category": "DATABASE",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 21,
+    "patterns": [
+      {"match": "migration failed", "weight": 60},
+      {"match": "database migration error", "weight": 60},
+      {"match": "schema migration failed", "weight": 60},
+      {"match": "flyway error", "weight": 55},
+      {"match": "liquibase changeset failed", "weight": 55},
+      {"match": "migration script failed", "weight": 60},
+      {"match": "failed to apply migration", "weight": 60},
+      {"match": "schema version mismatch", "weight": 55},
+      {"match": "migration rollback triggered", "weight": 55},
+      {"match": "migrate: failed to apply", "weight": 55},
+      {"match": "alembic upgrade failed", "weight": 55},
+      {"match": "db schema out of date", "weight": 50},
+      {"match": "unable to run migration", "weight": 55}
+    ],
+    "possible_causes": [
+      "Migration script contains a SQL syntax error or targets a nonexistent column",
+      "Migration running against wrong schema version due to out-of-order deploy",
+      "Insufficient database permissions to run DDL (ALTER TABLE, CREATE INDEX)",
+      "Migration holding a long lock while production traffic is active",
+      "Partial migration left schema in inconsistent state after a previous failure",
+      "Incompatible migration between two concurrently deployed application versions"
+    ],
+    "verification_steps": [
+      "kubectl logs <migration-job-pod> --tail=200",
+      "SELECT * FROM schema_migrations ORDER BY version DESC LIMIT 20",
+      "SELECT * FROM flyway_schema_history ORDER BY installed_on DESC LIMIT 10",
+      "psql -c '\\d <table>' to verify current schema",
+      "kubectl get jobs -n <namespace> | grep migrate"
+    ],
+    "recommended_fixes": [
+      "Review migration SQL for syntax errors and validate against current schema",
+      "Run migration in a dry-run / preview mode before applying to production",
+      "Ensure the database user has DDL privileges: GRANT ALL ON SCHEMA public",
+      "Use a migration repair command: flyway repair or alembic stamp head",
+      "Apply backward-compatible migrations (expand/contract pattern)",
+      "Run migrations in a maintenance window to avoid production lock contention"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF", "APPLICATION_STARTUP_FAILURE"]
+  },
+  {
+    "id": "DB_REPLICATION_LAG",
+    "title": "Database Replication Lag",
+    "category": "DATABASE",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 22,
+    "patterns": [
+      {"match": "replication lag", "weight": 60},
+      {"match": "replica is behind", "weight": 55},
+      {"match": "replication delay", "weight": 55},
+      {"match": "slave lag", "weight": 50},
+      {"match": "standby is too far behind", "weight": 60},
+      {"match": "replication is broken", "weight": 60},
+      {"match": "replica not synced", "weight": 55},
+      {"match": "seconds_behind_master", "weight": 55},
+      {"match": "streaming replication lag exceeded", "weight": 60},
+      {"match": "WAL sender timeout", "weight": 50},
+      {"match": "replica out of sync", "weight": 55},
+      {"match": "replication slot inactive", "weight": 55},
+      {"match": "wal_level not set to replica", "weight": 50}
+    ],
+    "possible_causes": [
+      "Replica is being overwhelmed by write volume from the primary",
+      "Network bandwidth between primary and replica is saturated",
+      "Replica disk I/O is slower than the write-ahead log generation rate",
+      "Long-running query on the replica blocking replication apply",
+      "Replication slot accumulating unreplicated WAL segments filling disk",
+      "Primary experienced a high-load spike that replica is catching up from"
+    ],
+    "verification_steps": [
+      "SELECT * FROM pg_stat_replication ON PRIMARY",
+      "SELECT now() - pg_last_xact_replay_timestamp() AS replication_lag ON REPLICA",
+      "SHOW SLAVE STATUS\\G (MySQL)",
+      "kubectl logs <replica-pod> | grep -i 'lag\\|replication\\|behind'",
+      "kubectl exec <replica-pod> -- df -h to check disk space for WAL"
+    ],
+    "recommended_fixes": [
+      "Reduce write load on primary or add read replicas to distribute reads",
+      "Increase replica instance size (CPU, disk IOPS, network bandwidth)",
+      "Terminate long-running queries on the replica blocking apply",
+      "Monitor and alert on replication lag with pg_stat_replication",
+      "Drop unused replication slots that are accumulating WAL segments",
+      "Use synchronous_commit = off to reduce replication overhead if tolerable"
+    ],
+    "causes_incidents": ["DB_CONNECTION_FAILURE"]
+  },
+  {
+    "id": "REDIS_OOM",
+    "title": "Redis Out of Memory",
+    "category": "CACHE",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 23,
+    "patterns": [
+      {"match": "OOM command not allowed", "weight": 65},
+      {"match": "used_memory > maxmemory", "weight": 60},
+      {"match": "ERR command not allowed when used memory", "weight": 60},
+      {"match": "maxmemory-policy", "weight": 45},
+      {"match": "redis: OOM", "weight": 65},
+      {"match": "out of memory, consider using eviction", "weight": 60},
+      {"match": "MISCONF Redis is configured", "weight": 55},
+      {"match": "redis ran out of memory", "weight": 60},
+      {"match": "eviction policy allkeys", "weight": 45},
+      {"match": "redis memory limit reached", "weight": 55},
+      {"match": "used_memory_rss exceeds", "weight": 55},
+      {"match": "maxmemory exceeded", "weight": 60}
+    ],
+    "possible_causes": [
+      "Redis maxmemory limit set too low for current data volume",
+      "TTL not set on keys causing unbounded memory growth",
+      "Eviction policy set to noeviction preventing new writes when full",
+      "Large Lua scripts or sorted sets consuming unexpected memory",
+      "Cache warming after restart loading more data than configured capacity",
+      "Memory fragmentation ratio high after many small object deletions"
+    ],
+    "verification_steps": [
+      "redis-cli INFO memory | grep used_memory",
+      "redis-cli INFO memory | grep maxmemory",
+      "redis-cli CONFIG GET maxmemory-policy",
+      "redis-cli DEBUG SLEEP 0 to check responsiveness",
+      "redis-cli MEMORY DOCTOR for Redis memory diagnostics"
+    ],
+    "recommended_fixes": [
+      "Increase maxmemory: redis-cli CONFIG SET maxmemory <new-value>",
+      "Set a sensible eviction policy: CONFIG SET maxmemory-policy allkeys-lru",
+      "Audit keys without TTL: redis-cli --scan | xargs redis-cli TTL | grep -c '\\-1'",
+      "Set TTL on all cacheable keys to prevent unbounded accumulation",
+      "Scale Redis instance to a larger memory tier",
+      "Enable Redis memory defragmentation: CONFIG SET activedefrag yes"
+    ],
+    "causes_incidents": ["REDIS_CONNECTION_TIMEOUT", "CRASH_LOOP_BACKOFF"]
+  },
+  {
+    "id": "REDIS_CONNECTION_TIMEOUT",
+    "title": "Redis Connection Timeout / Failure",
+    "category": "CACHE",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 24,
+    "patterns": [
+      {"match": "redis connection timeout", "weight": 60},
+      {"match": "Error connecting to Redis", "weight": 60},
+      {"match": "redis: dial tcp", "weight": 55},
+      {"match": "REDIS connection refused", "weight": 60},
+      {"match": "Failed to connect to Redis", "weight": 60},
+      {"match": "redis: connection pool exhausted", "weight": 55},
+      {"match": "redis timeout", "weight": 55},
+      {"match": "unable to reach redis", "weight": 55},
+      {"match": "redis connection lost", "weight": 55},
+      {"match": "connection to redis failed", "weight": 55},
+      {"match": "redis: i/o timeout", "weight": 60},
+      {"match": "redis ping failed", "weight": 55},
+      {"match": "could not get redis connection from pool", "weight": 55}
+    ],
+    "possible_causes": [
+      "Redis pod crashed or was OOMKilled",
+      "Network policy blocking traffic to the Redis port (6379)",
+      "Redis connection pool exhausted due to connection leaks",
+      "Redis is overwhelmed and not responding to commands within timeout",
+      "Redis service endpoint not yet available after a restart",
+      "Wrong Redis host or port configured in application environment"
+    ],
+    "verification_steps": [
+      "kubectl get pods -l app=redis",
+      "kubectl exec -it <pod> -- redis-cli -h <redis-host> ping",
+      "kubectl logs <redis-pod> --tail=100",
+      "kubectl get svc <redis-service>",
+      "kubectl exec <pod> -- nc -zv <redis-host> 6379"
+    ],
+    "recommended_fixes": [
+      "Verify Redis pod is running: kubectl get pods -l app=redis",
+      "Check Redis logs for OOM or crash: kubectl logs <redis-pod>",
+      "Increase connection pool size and add connection retry logic",
+      "Verify REDIS_URL environment variable is correctly set",
+      "Check network policies allowing port 6379",
+      "Restart Redis if it is in a degraded state: kubectl rollout restart"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF", "APPLICATION_STARTUP_FAILURE"]
+  },
+  {
+    "id": "REDIS_REPLICATION_BROKEN",
+    "title": "Redis Replication Broken",
+    "category": "CACHE",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 25,
+    "patterns": [
+      {"match": "REPLICAOF failed", "weight": 60},
+      {"match": "replication handshake failed", "weight": 60},
+      {"match": "replica lost connection", "weight": 55},
+      {"match": "replication link down", "weight": 60},
+      {"match": "replica disconnected", "weight": 55},
+      {"match": "Error condition on socket for SYNC", "weight": 55},
+      {"match": "Partial resynchronization failed", "weight": 60},
+      {"match": "redis replication error", "weight": 55},
+      {"match": "master-replica sync failed", "weight": 60},
+      {"match": "full resync from master", "weight": 50},
+      {"match": "replication: unable to sync", "weight": 55},
+      {"match": "redis replica out of sync", "weight": 55}
+    ],
+    "possible_causes": [
+      "Network interruption between Redis primary and replica",
+      "Redis primary ran out of memory and became unresponsive",
+      "Replication buffer overflow caused replica to be disconnected",
+      "Clock skew between nodes causing replication state confusion",
+      "Redis version mismatch between primary and replica",
+      "Large RDB snapshot generation blocking the primary during sync"
+    ],
+    "verification_steps": [
+      "redis-cli INFO replication on primary",
+      "redis-cli INFO replication on replica",
+      "kubectl logs <redis-replica-pod> | grep -i 'replicate\\|sync\\|master'",
+      "kubectl exec <replica-pod> -- redis-cli REPLICAOF <master-host> <port>",
+      "kubectl get pods -l role=redis-replica"
+    ],
+    "recommended_fixes": [
+      "Check primary Redis health and restart if needed",
+      "Increase client-output-buffer-limit for replication: CONFIG SET client-output-buffer-limit",
+      "Trigger manual resync: redis-cli REPLICAOF NO ONE then REPLICAOF <master>",
+      "Verify network connectivity between primary and replica pods",
+      "Increase repl-backlog-size to tolerate temporary network interruptions",
+      "Upgrade both primary and replica to the same Redis version"
+    ],
+    "causes_incidents": ["REDIS_CONNECTION_TIMEOUT"]
+  },
+  {
+    "id": "CONSUMER_LAG",
+    "title": "Message Consumer Lag",
+    "category": "MESSAGING",
+    "severity": "WARNING",
+    "incident_role": "symptom",
+    "priority": 26,
+    "patterns": [
+      {"match": "consumer lag", "weight": 60},
+      {"match": "consumer group lag", "weight": 60},
+      {"match": "messages pending", "weight": 45},
+      {"match": "offset lag", "weight": 55},
+      {"match": "consumer is behind", "weight": 55},
+      {"match": "lag is growing", "weight": 55},
+      {"match": "consumer falling behind", "weight": 55},
+      {"match": "topic partition lag", "weight": 60},
+      {"match": "unprocessed messages", "weight": 50},
+      {"match": "high consumer lag detected", "weight": 60},
+      {"match": "consumer offset lagging", "weight": 60},
+      {"match": "message backlog growing", "weight": 55}
+    ],
+    "possible_causes": [
+      "Message broker is down or experiencing high load",
+      "Consumer processing is too slow relative to the message production rate",
+      "Consumer group rebalance triggered by node failure or deployment",
+      "Topic partition count too low for the current message throughput",
+      "Poison-pill message causing consumer to stall and retry indefinitely",
+      "Consumer application OOMKilled or crashing mid-batch"
+    ],
+    "verification_steps": [
+      "kafka-consumer-groups.sh --describe --group <group-name>",
+      "kubectl logs <consumer-pod> | grep -i 'lag\\|offset\\|partition'",
+      "kubectl get pods -l app=<consumer>",
+      "Check broker health: kubectl get pods -l app=kafka",
+      "Monitor topic metrics via broker admin API"
+    ],
+    "recommended_fixes": [
+      "Increase consumer parallelism by adding more consumer replicas",
+      "Increase topic partition count to allow higher consumer parallelism",
+      "Identify and skip or quarantine the poison-pill message",
+      "Investigate consumer application for processing bottlenecks",
+      "Use HPA to auto-scale consumers based on consumer lag metric",
+      "Tune consumer batch size and poll interval for throughput"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "MESSAGE_BROKER_DOWN",
+    "title": "Message Broker Unavailable",
+    "category": "MESSAGING",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 27,
+    "patterns": [
+      {"match": "broker unavailable", "weight": 60},
+      {"match": "message broker connection failed", "weight": 60},
+      {"match": "broker is down", "weight": 60},
+      {"match": "failed to connect to broker", "weight": 60},
+      {"match": "broker connection lost", "weight": 55},
+      {"match": "LEADER_NOT_AVAILABLE", "weight": 60},
+      {"match": "broker disconnected", "weight": 55},
+      {"match": "unable to reach message broker", "weight": 60},
+      {"match": "broker timeout", "weight": 55},
+      {"match": "no broker available", "weight": 60},
+      {"match": "broker refused connection", "weight": 55},
+      {"match": "message broker unreachable", "weight": 60},
+      {"match": "could not connect to any broker", "weight": 65}
+    ],
+    "possible_causes": [
+      "Message broker pod(s) have crashed or been OOMKilled",
+      "Broker disk is full, preventing new message writes",
+      "Broker quorum lost due to multiple node failures simultaneously",
+      "Network partition isolating broker nodes from producers and consumers",
+      "Broker under-provisioned for the current message throughput",
+      "Rolling update of broker nodes disrupting in-flight replication"
+    ],
+    "verification_steps": [
+      "kubectl get pods -l app=kafka -o wide",
+      "kubectl logs <broker-pod> --tail=100",
+      "kubectl exec <pod> -- nc -zv <broker-host> 9092",
+      "kubectl get events | grep -i 'broker\\|kafka'",
+      "kubectl exec <pod> -- kafka-broker-api-versions.sh --bootstrap-server <broker>:9092"
+    ],
+    "recommended_fixes": [
+      "Restart failed broker pods: kubectl rollout restart statefulset/<broker>",
+      "Check disk space on broker nodes: kubectl exec <pod> -- df -h",
+      "Verify broker JVM heap settings match container memory limits",
+      "Check and resolve network policies blocking broker port 9092",
+      "Scale broker replicas to restore quorum after node failure",
+      "Review replication factor to ensure fault tolerance"
+    ],
+    "causes_incidents": ["CONSUMER_LAG"]
+  },
+  {
+    "id": "QUEUE_FULL",
+    "title": "Message Queue / Topic Full",
+    "category": "MESSAGING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 28,
+    "patterns": [
+      {"match": "queue is full", "weight": 60},
+      {"match": "topic is full", "weight": 60},
+      {"match": "producer queue full", "weight": 60},
+      {"match": "message queue capacity exceeded", "weight": 65},
+      {"match": "queue capacity limit reached", "weight": 60},
+      {"match": "buffer is full", "weight": 55},
+      {"match": "producer back pressure", "weight": 55},
+      {"match": "queue overflow", "weight": 60},
+      {"match": "topic retention limit exceeded", "weight": 55},
+      {"match": "log.retention.bytes exceeded", "weight": 55},
+      {"match": "disk quota reached for topic", "weight": 60},
+      {"match": "queue depth exceeded", "weight": 55}
+    ],
+    "possible_causes": [
+      "Consumer lag has grown so large that the queue storage limit is reached",
+      "Retention policy (time or bytes) is too small for the message production rate",
+      "Consumer is down, allowing messages to accumulate without being processed",
+      "Unexpected message production spike without corresponding consumer scaling",
+      "Broker disk filled with log segments before retention cleanup could run",
+      "Topic partition count insufficient, causing a small number of partitions to overflow"
+    ],
+    "verification_steps": [
+      "kafka-log-dirs.sh --describe --bootstrap-server <broker>:9092 --topic-list <topic>",
+      "kubectl exec <broker-pod> -- df -h",
+      "kafka-topics.sh --describe --topic <topic>",
+      "kubectl logs <producer-pod> | grep -i 'full\\|overflow\\|backpressure'",
+      "Review broker retention settings: log.retention.bytes, log.retention.hours"
+    ],
+    "recommended_fixes": [
+      "Scale consumer replicas to start draining the queue immediately",
+      "Increase log.retention.bytes or log.retention.hours for the topic",
+      "Add more disk capacity to broker nodes",
+      "Increase topic partition count to distribute load",
+      "Implement producer back-pressure handling to slow production",
+      "Set consumer.max.poll.records higher to drain faster per poll"
+    ],
+    "causes_incidents": ["CONSUMER_LAG", "MESSAGE_BROKER_DOWN"]
+  },
+  {
+    "id": "CLOUD_IAM_DENIED",
+    "title": "Cloud IAM / Authorization Denied",
+    "category": "CLOUD",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 29,
+    "patterns": [
+      {"match": "AccessDenied", "weight": 60},
+      {"match": "is not authorized to perform", "weight": 65},
+      {"match": "User is not authorized", "weight": 60},
+      {"match": "iam:PassRole", "weight": 55},
+      {"match": "IAM policy denied", "weight": 60},
+      {"match": "Forbidden: 403", "weight": 55},
+      {"match": "not authorized to perform this action", "weight": 60},
+      {"match": "authorization failed for resource", "weight": 55},
+      {"match": "service account lacks permissions", "weight": 55},
+      {"match": "resource access denied by policy", "weight": 60},
+      {"match": "assume role failed", "weight": 55},
+      {"match": "workload identity failed", "weight": 55},
+      {"match": "cloud: permission denied", "weight": 55}
+    ],
+    "possible_causes": [
+      "IAM role or policy missing required action permission for the resource",
+      "Workload identity or pod service account not bound to the correct IAM role",
+      "IAM assume-role trust policy does not include the calling service",
+      "SCP (Service Control Policy) at the organization level blocking the action",
+      "Resource-based policy (e.g., S3 bucket policy) denying cross-account access",
+      "Credential rotation invalidated the active session token mid-request"
+    ],
+    "verification_steps": [
+      "aws iam simulate-principal-policy --policy-source-arn <role-arn> --action-names <action>",
+      "kubectl describe serviceaccount <sa> -n <namespace>",
+      "kubectl get iamserviceaccount -n <namespace> (if using AWS IRSA)",
+      "Check cloud provider audit logs for the exact denied API call",
+      "Review IAM role trust relationships and permission boundaries"
+    ],
+    "recommended_fixes": [
+      "Add the required permission to the IAM role: aws iam attach-role-policy",
+      "Bind the pod service account to the correct IAM role via IRSA or Workload Identity",
+      "Review and update resource-based policies on the target resource",
+      "Check for SCP denials at the organization or account level",
+      "Rotate credentials and re-attach the correct IAM policy",
+      "Use the principle of least privilege and audit permissions quarterly"
+    ],
+    "causes_incidents": ["AUTHENTICATION_FAILURE", "OBJECT_STORAGE_ACCESS_FAILURE"]
+  },
+  {
+    "id": "OBJECT_STORAGE_ACCESS_FAILURE",
+    "title": "Object Storage Access Failure",
+    "category": "CLOUD",
+    "severity": "ERROR",
+    "incident_role": "symptom",
+    "priority": 30,
+    "patterns": [
+      {"match": "Failed to access object storage", "weight": 65},
+      {"match": "bucket not found", "weight": 60},
+      {"match": "object not found", "weight": 55},
+      {"match": "blob storage error", "weight": 55},
+      {"match": "S3 error", "weight": 55},
+      {"match": "GCS error", "weight": 55},
+      {"match": "storage bucket access denied", "weight": 60},
+      {"match": "object storage timeout", "weight": 55},
+      {"match": "cannot read from bucket", "weight": 60},
+      {"match": "PutObject failed", "weight": 55},
+      {"match": "GetObject failed", "weight": 55},
+      {"match": "object storage connection error", "weight": 60},
+      {"match": "storage account error", "weight": 55}
+    ],
+    "possible_causes": [
+      "IAM/service account lacks the required read/write permission on the bucket",
+      "Bucket or container name is incorrect or does not exist",
+      "Object storage endpoint is unreachable due to a network policy",
+      "Presigned URL or SAS token has expired",
+      "Cross-region replication delay causing objects to appear missing",
+      "VPC endpoint for object storage not configured, causing traffic to route externally"
+    ],
+    "verification_steps": [
+      "aws s3 ls s3://<bucket>/ or gsutil ls gs://<bucket>/",
+      "kubectl exec <pod> -- curl -v <storage-endpoint>",
+      "Check pod service account annotations for IAM role binding",
+      "aws s3api head-bucket --bucket <bucket> to verify bucket existence",
+      "Review cloud audit logs for the specific denied API call"
+    ],
+    "recommended_fixes": [
+      "Grant the required IAM permissions (s3:GetObject, s3:PutObject) to the pod role",
+      "Verify the bucket name and region in application configuration",
+      "Configure a VPC endpoint for object storage to ensure private connectivity",
+      "Refresh expired presigned URLs or SAS tokens",
+      "Update bucket policy to allow cross-account access if needed",
+      "Enable server-side logging on the bucket to capture all access attempts"
+    ],
+    "causes_incidents": ["APPLICATION_STARTUP_FAILURE"]
+  },
+  {
+    "id": "CLOUD_RATE_LIMIT",
+    "title": "Cloud API Rate Limit Exceeded",
+    "category": "CLOUD",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 31,
+    "patterns": [
+      {"match": "rate limit exceeded", "weight": 60},
+      {"match": "TooManyRequests", "weight": 60},
+      {"match": "429 Too Many Requests", "weight": 65},
+      {"match": "API rate limit", "weight": 55},
+      {"match": "throttling exception", "weight": 60},
+      {"match": "ThrottlingException", "weight": 60},
+      {"match": "request rate limit hit", "weight": 60},
+      {"match": "API calls exceeded", "weight": 55},
+      {"match": "service throttling detected", "weight": 55},
+      {"match": "request throttled", "weight": 60},
+      {"match": "RetryableException: rate exceeded", "weight": 55},
+      {"match": "quota limit reached for API", "weight": 60}
+    ],
+    "possible_causes": [
+      "Application is making too many API calls without exponential back-off",
+      "Multiple replicas all hitting the same API endpoint simultaneously",
+      "Polling loop with too short an interval hitting a rate-limited API",
+      "Burst traffic spike causing sudden spike in downstream API calls",
+      "Insufficient API quota allocated for the workload tier",
+      "Missing caching layer causing repeated identical API calls"
+    ],
+    "verification_steps": [
+      "kubectl logs <pod> | grep -i 'throttle\\|rate\\|429'",
+      "Check cloud API metrics dashboard for request rate trends",
+      "Review application polling or API call intervals in configuration",
+      "Check API quota limits in cloud console",
+      "Correlate spikes in 429 errors with deployment events or traffic patterns"
+    ],
+    "recommended_fixes": [
+      "Implement exponential back-off with jitter for all external API calls",
+      "Add a caching layer (Redis, in-memory) to reduce redundant API calls",
+      "Increase API quota tier through cloud provider support",
+      "Reduce polling frequency or switch to event-driven / webhook pattern",
+      "Distribute API calls across multiple accounts or credentials if permitted",
+      "Use circuit breaker to stop hammering a throttled API automatically"
+    ],
+    "causes_incidents": ["CRASH_LOOP_BACKOFF", "SERVICE_CIRCUIT_BREAKER_OPEN"]
+  },
+  {
+    "id": "CAPACITY_EXCEEDED",
+    "title": "Infrastructure Capacity Exceeded",
+    "category": "CLOUD",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 32,
+    "patterns": [
+      {"match": "InsufficientInstanceCapacity", "weight": 65},
+      {"match": "no capacity available", "weight": 60},
+      {"match": "capacity exceeded", "weight": 60},
+      {"match": "out of capacity", "weight": 55},
+      {"match": "resource capacity limit", "weight": 55},
+      {"match": "scaling failed due to capacity", "weight": 60},
+      {"match": "pool capacity reached", "weight": 55},
+      {"match": "node pool exhausted", "weight": 60},
+      {"match": "cluster capacity exceeded", "weight": 60},
+      {"match": "no available instances", "weight": 55},
+      {"match": "resource pool exhausted", "weight": 55},
+      {"match": "instance capacity unavailable", "weight": 60}
+    ],
+    "possible_causes": [
+      "Cloud availability zone does not have the requested instance type available",
+      "Node pool maximum size is too small for the current autoscaler demand",
+      "Cluster autoscaler cannot scale due to incorrect IAM permissions",
+      "Reserved instance limits reached in the cloud account",
+      "Hard quota on the number of vCPUs or instances in the cloud account",
+      "All nodes in the pool are at maximum pod density (maxPods limit)"
+    ],
+    "verification_steps": [
+      "kubectl get nodes -o wide",
+      "kubectl describe pod <pending-pod> | grep -A10 'Events'",
+      "kubectl get events | grep -i 'capacity\\|insufficient\\|scale'",
+      "Check cloud console for node pool scaling activity",
+      "aws ec2 describe-availability-zones --query 'AvailabilityZones'"
+    ],
+    "recommended_fixes": [
+      "Increase the maximum size of the node pool in the cloud console",
+      "Add a second node pool with a different instance type or in a different AZ",
+      "Request quota increase for the required instance type in the cloud account",
+      "Use Spot or preemptible instances to access spare capacity more easily",
+      "Enable cluster autoscaler with expander=priority to prefer available AZs",
+      "Review pod resource requests to ensure they are accurate and not over-requested"
+    ],
+    "causes_incidents": ["POD_PENDING", "POD_EVICTED"]
+  },
+  {
+    "id": "SSL_TLS_CERTIFICATE_EXPIRED",
+    "title": "SSL/TLS Certificate Expired",
+    "category": "SECURITY",
+    "severity": "CRITICAL",
+    "incident_role": "root_cause",
+    "priority": 33,
+    "patterns": [
+      {"match": "certificate has expired", "weight": 65},
+      {"match": "certificate is expired", "weight": 65},
+      {"match": "certificate expired", "weight": 65},
+      {"match": "certificate validity expired", "weight": 60},
+      {"match": "x509: certificate has expired", "weight": 70},
+      {"match": "SSL certificate expiration", "weight": 60},
+      {"match": "TLS certificate expired", "weight": 65},
+      {"match": "certificate not yet valid", "weight": 60},
+      {"match": "cert: expired", "weight": 55},
+      {"match": "certificate expiry", "weight": 55},
+      {"match": "your certificate is not valid", "weight": 60},
+      {"match": "SSL_ERROR_EXPIRED_CERT_ALERT", "weight": 65},
+      {"match": "certificate has expired or is not yet valid", "weight": 70}
+    ],
+    "possible_causes": [
+      "Certificate renewal automation (cert-manager) failed or was not configured",
+      "Let's Encrypt ACME challenge blocked by network policy",
+      "Certificate secret was manually deleted or overwritten",
+      "Clock skew on the node makes a valid certificate appear expired",
+      "Self-signed certificate issued with too short a validity period",
+      "Wildcard certificate expired and was not propagated to all services"
+    ],
+    "verification_steps": [
+      "kubectl get certificate -n <namespace>",
+      "kubectl describe certificate <cert-name> -n <namespace>",
+      "openssl s_client -connect <host>:443 </dev/null 2>/dev/null | openssl x509 -noout -dates",
+      "kubectl logs -n cert-manager -l app=cert-manager --tail=100",
+      "kubectl get secret <tls-secret> -o jsonpath='{.data.tls\\.crt}' | base64 -d | openssl x509 -noout -dates"
+    ],
+    "recommended_fixes": [
+      "Renew certificate immediately: kubectl annotate certificate <name> cert-manager.io/issue-once=true",
+      "Install and configure cert-manager for automatic renewal",
+      "Verify ACME challenge is reachable: check network policies and ingress rules",
+      "Sync the renewed certificate secret to all namespaces using kubernetes-replicator",
+      "Add certificate expiry monitoring alerts (e.g., Prometheus ssl_certificate_expiry_seconds)",
+      "Set certificate renewalBefore to 30 days before expiry as a buffer"
+    ],
+    "causes_incidents": ["TLS_HANDSHAKE_FAILURE", "AUTHENTICATION_FAILURE"]
+  },
+  {
+    "id": "TLS_HANDSHAKE_FAILURE",
+    "title": "TLS Handshake Failure",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 34,
+    "patterns": [
+      {"match": "TLS handshake failed", "weight": 65},
+      {"match": "tls: handshake failure", "weight": 65},
+      {"match": "ssl handshake failed", "weight": 65},
+      {"match": "SSL handshake error", "weight": 60},
+      {"match": "tls: no supported versions", "weight": 60},
+      {"match": "certificate verify failed", "weight": 60},
+      {"match": "unable to verify certificate", "weight": 55},
+      {"match": "x509: certificate signed by unknown authority", "weight": 65},
+      {"match": "remote error: tls", "weight": 55},
+      {"match": "ssl_error_handshake_failure_alert", "weight": 60},
+      {"match": "TLS negotiation failed", "weight": 60},
+      {"match": "handshake: failed to verify server certificate", "weight": 65},
+      {"match": "SSL peer certificate or SSH remote key was not OK", "weight": 60}
+    ],
+    "possible_causes": [
+      "Server TLS certificate is expired or self-signed without a trusted CA",
+      "Certificate Authority (CA) chain is incomplete or missing intermediate certs",
+      "TLS version mismatch between client and server (e.g., TLS 1.1 disabled)",
+      "Mutual TLS (mTLS) client certificate is expired or missing",
+      "DNS resolution pointing to wrong IP causing certificate CN/SAN mismatch",
+      "Custom CA certificate not injected into application trust store"
+    ],
+    "verification_steps": [
+      "openssl s_client -connect <host>:443 -showcerts",
+      "openssl verify -CAfile <ca-bundle.crt> <server.crt>",
+      "kubectl exec <pod> -- curl -sv https://<target>",
+      "kubectl get secret <tls-secret> -o yaml",
+      "kubectl exec <pod> -- cat /etc/ssl/certs/ca-certificates.crt | openssl crl2pkcs7 -nocrl | openssl pkcs7 -print_certs -noout"
+    ],
+    "recommended_fixes": [
+      "Renew the expired certificate and update the Kubernetes TLS secret",
+      "Add the custom CA certificate to the pod trust store via ConfigMap mount",
+      "Ensure the full certificate chain (including intermediates) is in the secret",
+      "Align TLS version settings: set ssl_protocols TLSv1.2 TLSv1.3",
+      "Verify DNS hostname matches the certificate CN or SAN fields",
+      "Use cert-manager to manage and auto-renew certificates"
+    ],
+    "causes_incidents": ["AUTHENTICATION_FAILURE", "DB_CONNECTION_FAILURE"]
+  },
+  {
+    "id": "NETWORK_TIMEOUT",
+    "title": "Network / Connection Timeout",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 35,
+    "patterns": [
+      {"match": "connection timed out", "weight": 60},
+      {"match": "request timeout", "weight": 55},
+      {"match": "network timeout", "weight": 55},
+      {"match": "read timeout", "weight": 50},
+      {"match": "write timeout", "weight": 50},
+      {"match": "dial timeout", "weight": 55},
+      {"match": "i/o timeout", "weight": 55},
+      {"match": "upstream timed out", "weight": 60},
+      {"match": "gateway timeout", "weight": 55},
+      {"match": "context deadline exceeded", "weight": 55},
+      {"match": "operation timed out", "weight": 55},
+      {"match": "timeout waiting for connection", "weight": 60},
+      {"match": "TCP connection timeout", "weight": 60},
+      {"match": "socket timeout reached", "weight": 55}
+    ],
+    "possible_causes": [
+      "Target service pod is overloaded and not responding in time",
+      "Network policy or firewall rule dropping packets between pods",
+      "Service mesh (Istio/Linkerd) timeout configuration is too aggressive",
+      "VPC routing misconfiguration causing packets to be black-holed",
+      "Target service has crashed and no new connections are being accepted",
+      "Database or cache is under heavy load causing slow response times"
+    ],
+    "verification_steps": [
+      "kubectl exec <pod> -- curl -sv --max-time 5 http://<target>",
+      "kubectl exec <pod> -- nc -zv <target-host> <port>",
+      "kubectl get networkpolicies -n <namespace> -o yaml",
+      "kubectl describe svc <service>",
+      "kubectl top pods -n <namespace>"
+    ],
+    "recommended_fixes": [
+      "Increase timeout values in the service mesh or application config",
+      "Scale up the target service to handle the request rate",
+      "Review and fix network policies blocking the traffic path",
+      "Add a circuit breaker to fail fast instead of waiting for timeout",
+      "Check for pod anti-affinity causing all pods to land on a congested node",
+      "Use distributed tracing (Jaeger/Zipkin) to identify the slow component"
+    ],
+    "causes_incidents": ["DB_CONNECTION_FAILURE", "SERVICE_CIRCUIT_BREAKER_OPEN"]
+  },
+  {
+    "id": "HTTP_GATEWAY_ERROR",
+    "title": "HTTP 5xx Gateway Error",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "symptom",
+    "priority": 36,
+    "patterns": [
+      {"match": "502 Bad Gateway", "weight": 65},
+      {"match": "503 Service Unavailable", "weight": 65},
+      {"match": "upstream connect error", "weight": 60},
+      {"match": "bad gateway", "weight": 55},
+      {"match": "upstream connection failure", "weight": 60},
+      {"match": "no upstream hosts available", "weight": 60},
+      {"match": "backend unavailable", "weight": 55},
+      {"match": "upstream service unreachable", "weight": 55},
+      {"match": "502 upstream connection", "weight": 60},
+      {"match": "503 service temporarily unavailable", "weight": 60},
+      {"match": "connect ECONNREFUSED upstream", "weight": 55},
+      {"match": "upstream service returned 503", "weight": 60}
+    ],
+    "possible_causes": [
+      "All upstream service pods are down or not ready",
+      "Circuit breaker is open, blocking traffic to the upstream",
+      "Ingress controller cannot reach the backend service",
+      "Service mesh sidecar has failed, preventing pod-to-pod communication",
+      "Upstream pod is crashing (CrashLoopBackOff) and cannot accept connections",
+      "Load balancer target group has no healthy instances"
+    ],
+    "verification_steps": [
+      "kubectl get pods -l <app-selector>",
+      "kubectl describe svc <service>",
+      "kubectl get endpoints <service>",
+      "kubectl logs <ingress-pod> --tail=100",
+      "kubectl exec <pod> -- curl -sv http://<upstream-service>"
+    ],
+    "recommended_fixes": [
+      "Scale up or restart the upstream service pods",
+      "Investigate why upstream pods are not ready: kubectl describe pod <pod>",
+      "Check endpoints are populated: kubectl get endpoints <service>",
+      "Verify ingress rules and backend service selectors match pod labels",
+      "Check circuit breaker status and reset if conditions are resolved",
+      "Enable pod disruption budget to ensure minimum availability during updates"
+    ],
+    "causes_incidents": []
+  },
+  {
+    "id": "SERVICE_CIRCUIT_BREAKER_OPEN",
+    "title": "Service Circuit Breaker Open",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 37,
+    "patterns": [
+      {"match": "circuit breaker open", "weight": 65},
+      {"match": "circuit breaker triggered", "weight": 65},
+      {"match": "circuit is OPEN", "weight": 65},
+      {"match": "circuit breaker is open", "weight": 65},
+      {"match": "requests blocked by circuit breaker", "weight": 60},
+      {"match": "circuit breaker tripped", "weight": 60},
+      {"match": "half-open circuit breaker", "weight": 55},
+      {"match": "circuit breaker failure threshold", "weight": 60},
+      {"match": "fallback triggered", "weight": 50},
+      {"match": "hystrix: circuit open", "weight": 60},
+      {"match": "resilience4j: circuit breaker", "weight": 55},
+      {"match": "circuit opened after consecutive failures", "weight": 65}
+    ],
+    "possible_causes": [
+      "Downstream service failure rate exceeded the circuit breaker threshold",
+      "Downstream service is experiencing high latency beyond the configured timeout",
+      "Network timeout storm causing consecutive failures to trip the breaker",
+      "Circuit breaker failure threshold tuned too aggressively for normal traffic variance",
+      "Downstream dependency was taken offline for maintenance without coordinating callers",
+      "Resource exhaustion (thread pool, connection pool) causing all calls to fail"
+    ],
+    "verification_steps": [
+      "kubectl logs <pod> | grep -i 'circuit\\|breaker\\|fallback'",
+      "Check Hystrix dashboard or resilience4j metrics endpoint",
+      "kubectl exec <pod> -- curl -s http://localhost:<port>/actuator/health",
+      "Review downstream service health: kubectl get pods -l <downstream-selector>",
+      "Check metrics: failure_rate, slow_call_rate, not_permitted_calls_count"
+    ],
+    "recommended_fixes": [
+      "Fix the root cause in the downstream service (restart, scale, or patch)",
+      "Wait for the circuit breaker half-open retry period to automatically reset",
+      "Manually reset the circuit breaker if the downstream service is healthy",
+      "Tune circuitBreaker.failureRateThreshold and slowCallRateThreshold",
+      "Implement a fallback response to degrade gracefully during open state",
+      "Add retry logic with exponential back-off before hitting the circuit breaker"
+    ],
+    "causes_incidents": ["HTTP_GATEWAY_ERROR"]
+  },
+  {
+    "id": "LOAD_BALANCER_UNHEALTHY",
+    "title": "Load Balancer Health Check Failure",
+    "category": "NETWORKING",
+    "severity": "ERROR",
+    "incident_role": "root_cause",
+    "priority": 38,
+    "patterns": [
+      {"match": "health check failed", "weight": 60},
+      {"match": "backend unhealthy", "weight": 60},
+      {"match": "load balancer health check", "weight": 55},
+      {"match": "target health check failing", "weight": 60},
+      {"match": "unhealthy target", "weight": 60},
+      {"match": "host removed from pool", "weight": 55},
+      {"match": "target is unhealthy", "weight": 60},
+      {"match": "health probe failed", "weight": 55},
+      {"match": "removing unhealthy host", "weight": 55},
+      {"match": "all backend instances unhealthy", "weight": 65},
+      {"match": "listener health check failure", "weight": 60},
+      {"match": "load balancer backend down", "weight": 60},
+      {"match": "health status: unhealthy", "weight": 55}
+    ],
+    "possible_causes": [
+      "Application pods are not responding to health check requests",
+      "Health check path or port configured incorrectly in the load balancer",
+      "Application startup is slow and health checks fail before readiness",
+      "Security group or network ACL blocking health check traffic from the LB",
+      "All target instances crashed simultaneously, leaving no healthy targets",
+      "Stale target registration — terminated instances still listed as targets"
+    ],
+    "verification_steps": [
+      "kubectl get pods -l <app-selector>",
+      "aws elb describe-instance-health --load-balancer-name <lb-name>",
+      "kubectl exec <pod> -- curl -s http://localhost:<port><health-path>",
+      "Check load balancer access logs for health check request patterns",
+      "Verify security groups allow inbound traffic from LB subnet"
+    ],
+    "recommended_fixes": [
+      "Verify the health check path and port match the application",
+      "Fix the application pod so it responds with 200 on the health path",
+      "Update security group rules to permit LB health check traffic",
+      "Increase health check timeout and interval to tolerate slow startup",
+      "Deregister stale instances from the target group",
+      "Scale up healthy pods and allow the LB to re-add them after passing checks"
+    ],
+    "causes_incidents": ["HTTP_GATEWAY_ERROR", "SERVICE_CIRCUIT_BREAKER_OPEN"]
   }
 ]

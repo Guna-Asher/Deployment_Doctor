@@ -1,99 +1,120 @@
 # Deployment Doctor — PRD
-_Last updated: 2026-02-13 — Audit report generated_
 
-## Overview
-Production-grade Explainable Incident Detection Engine for DevOps/SRE/Platform Engineering teams.
-Version: 1.6.0 | Engine: Deterministic Rule-Based | AI Layer: Optional (OpenRouter)
+## Original Problem Statement
+Expand Deployment Doctor's operational knowledge engine by significantly increasing incident blueprints (from 10 to minimum 30), detection rules (from 90 to minimum 300), and demo scenarios (from 11 to minimum 40). Add specific incident categories spanning Kubernetes, Databases, Redis, Kafka, AWS/Cloud, and Networking. Expand the DAG relationship model with new realistic root-cause → symptom chains. Ensure the UI automatically reflects these updates. Ensure all new and existing tests pass. Do NOT redesign the system, add SaaS features (auth/billing), or replace the deterministic engine with AI.
 
-## Problem Statement
-Deployment Doctor is a deterministic troubleshooting platform that analyzes deployment logs using
-rule-based pattern matching. Every conclusion is traceable to evidence. No AI guessing.
+---
 
 ## Architecture
-User Upload → Validation → Blueprint Matching → Evidence Attribution → Confidence Scoring
-→ Relationship Analysis (DAG, Proximity) → Root Cause Ranking → Report Generation → Optional AI Summary
+```
+/app/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── samples.py       — Demo scenario registry (50 scenarios)
+│   │   ├── services/
+│   │   │   ├── root_cause_engine.py
+│   │   │   └── scoring_engine.py
+│   │   ├── models.py, schemas.py, database.py
+│   ├── rules/
+│   │   └── incidents.json       — Source of truth: 38 blueprints, 445 rules
+│   ├── sample-logs/             — 50 demo log files (01-50)
+│   ├── tests/
+│   │   └── test_engine.py       — 70 tests (all passing)
+│   ├── server.py, Dockerfile
+│   └── .env                     — MONGO_URL, DB_NAME, DATABASE_URL
+├── frontend/src/
+│   ├── components/dd/
+│   └── pages/
+├── AUDIT_REPORT.md
+└── memory/PRD.md
+```
 
-## User Personas
-- DevOps Engineers, SREs, Platform Engineers, Backend Engineers
-- Recruiters and interviewers reviewing engineering demos
+---
 
 ## Tech Stack
-- **Frontend**: React (CRA), TailwindCSS, Lucide-React
-- **Backend**: FastAPI, SQLAlchemy (async), PostgreSQL
-- **AI Layer**: OpenRouter (optional) + emergentintegrations fallback + deterministic fallback
-- **Tests**: Pytest (41 tests, 100% pass)
+- **Backend**: FastAPI + PostgreSQL (SQLAlchemy/asyncpg) + MongoDB + Python 3.11
+- **Frontend**: React + Tailwind CSS (dark theme)
+- **Engine**: Deterministic rule-based pattern matching, DAG relationship validation
+- **Testing**: pytest (70 tests)
 
-## Core Requirements (Static)
-1. Deterministic: same log always produces same result
-2. Explainable: every conclusion traceable to evidence
-3. No AI for detection — AI only for optional presentation summary
-4. PostgreSQL relational storage
-5. Blueprint validation at startup (hard fail on error)
-6. DAG validation for incident relationships (hard fail on cycle)
+---
 
-## What's Been Implemented (2026-06-25)
+## What's Been Implemented
 
-### Backend Engine
-- [x] 10 Incident Blueprints (incidents.json) with realistic production patterns
-- [x] Blueprint Validation Engine (validate_blueprints) — validates at startup
-- [x] DAG Cycle Detection — DFS-based, detects direct/transitive cycles
-- [x] Pattern Matching Engine — case-insensitive, substring, multi-blueprint
-- [x] Deduped Scoring — each pattern contributes weight ONCE per blueprint
-- [x] Evidence Attribution Engine — line_number, line_text, pattern, blueprint_id, weight
-- [x] Confidence Scoring Engine — pattern_score + evidence_bonus + relationship_bonus - symptom_penalty
-- [x] Relationship Analysis Engine — proximity validation (200-line window)
-- [x] Root Cause Ranking Engine — deterministic tie-breaking (score → severity → priority → ID)
-- [x] Detection Status: CONFIDENT / AMBIGUOUS / INSUFFICIENT_EVIDENCE
-- [x] AI Summary Layer — OpenRouter (primary) → emergentintegrations (fallback) → deterministic template
-- [x] Analysis API — multipart upload + JSON body
-- [x] Incidents API — knowledge base
-- [x] Samples API — Demo Center
-- [x] PostgreSQL models (SQLAlchemy async + JSONB result storage)
+### Session 1 (Audit)
+- Generated comprehensive 18-section AUDIT_REPORT.md
+- Understood full codebase architecture
 
-### Sample Logs
-- [x] 11 sample log files (01-db-connection-failure through 11-root-cause-demo)
-- [x] All 11 produce CONFIDENT detection status
+### Session 2 (Knowledge Expansion) — 2026-06-27
+**incidents.json expansion:**
+- 10 → 38 blueprints (+28 new)
+- 90 → 445 rules/patterns (+355)
+- New categories: APPLICATION (2), CONFIGURATION (2), KUBERNETES (6), DATABASE (4), CACHE (3), MESSAGING (3), CLOUD (4), NETWORKING (6, including TLS/DNS)
 
-### Frontend (Dark Grafana/Datadog/Kibana Theme)
-- [x] Dashboard Layout with sidebar navigation
-- [x] Home/Upload Page — drag-drop, file validation
-- [x] Report Page — 12 sections: Primary Incident, Status, Why Selected, Confidence Breakdown,
-      Contributing Incidents, Evidence Attribution, Relationship Graph, Possible Causes,
-      Verification Commands, Recommended Fixes, Engine Metadata, Audit Trail, AI Summary
-- [x] Demo Center (/sample-scenarios) — 11 one-click scenario cards
-- [x] Incident Knowledge Base (/incidents) — search + expand blueprints
-- [x] All components: DashboardLayout, IncidentSummary, ConfidenceBreakdown, EvidenceViewer,
-      AuditTrailViewer, IncidentGraph, VerificationCommands, RecommendedFixes, EngineMetadata,
-      DetectionStatus, AISummary
+**New blueprints added:**
+APPLICATION_STARTUP_FAILURE, CONFIGURATION_VALIDATION_FAILURE, POD_PENDING, NODE_NOT_READY, RESOURCE_QUOTA_EXCEEDED, POD_EVICTED, LIVENESS_PROBE_FAILURE, READINESS_PROBE_FAILURE, DB_DEADLOCK, DB_SLOW_QUERY, DB_MIGRATION_FAILURE, DB_REPLICATION_LAG, REDIS_OOM, REDIS_CONNECTION_TIMEOUT, REDIS_REPLICATION_BROKEN, CONSUMER_LAG, MESSAGE_BROKER_DOWN, QUEUE_FULL, CLOUD_IAM_DENIED, OBJECT_STORAGE_ACCESS_FAILURE, CLOUD_RATE_LIMIT, CAPACITY_EXCEEDED, SSL_TLS_CERTIFICATE_EXPIRED, TLS_HANDSHAKE_FAILURE, NETWORK_TIMEOUT, HTTP_GATEWAY_ERROR, SERVICE_CIRCUIT_BREAKER_OPEN, LOAD_BALANCER_UNHEALTHY
 
-### Testing
-- [x] 41 pytest tests covering: blueprint validation, DAG, pattern matching, deduped scoring,
-      evidence attribution, proximity validation, relationship analysis, root cause ranking,
-      ambiguity detection, insufficient evidence, AI fallback
-- [x] 3 acceptance tests: DB failure, Root Cause Demo, Unknown Log
+**Existing blueprints updated (causes_incidents extended):**
+- DNS_FAILURE → added TLS_HANDSHAKE_FAILURE
+- DISK_FULL → added MESSAGE_BROKER_DOWN
+- MISSING_CONFIGURATION → added APPLICATION_STARTUP_FAILURE
 
-## Acceptance Test Results
-- 01-db-connection-failure.log: Primary=DB_CONNECTION_FAILURE, Confidence=100%, Evidence=11, Status=CONFIDENT ✓
-- 11-root-cause-demo.log: Primary=DB_CONNECTION_FAILURE, Contributing=CRASH_LOOP_BACKOFF, Relationship Bonus Applied, Status=CONFIDENT ✓
-- Unknown log: Status=INSUFFICIENT_EVIDENCE, Confidence=0%, Primary=None ✓
+**DAG relationships (53 total edges, no cycles):**
+Multi-hop chains include:
+- DISK_FULL → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF (3-hop)
+- DB_SLOW_QUERY → DB_DEADLOCK → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
+- REDIS_REPLICATION_BROKEN → REDIS_CONNECTION_TIMEOUT → CRASH_LOOP_BACKOFF (3-hop)
+- SSL_TLS_CERTIFICATE_EXPIRED → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE (3-hop)
+- CLOUD_IAM_DENIED → OBJECT_STORAGE_ACCESS_FAILURE → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
+- CONFIGURATION_VALIDATION_FAILURE → MISSING_CONFIGURATION → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF (4-hop)
+- NETWORK_TIMEOUT → SERVICE_CIRCUIT_BREAKER_OPEN → HTTP_GATEWAY_ERROR (3-hop)
+- DNS_FAILURE → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE (3-hop)
+- QUEUE_FULL → MESSAGE_BROKER_DOWN → CONSUMER_LAG (3-hop)
+- NODE_NOT_READY → POD_EVICTED → CRASH_LOOP_BACKOFF (3-hop)
+- RESOURCE_QUOTA_EXCEEDED → POD_EVICTED → CRASH_LOOP_BACKOFF (3-hop)
 
-## Prioritized Backlog
+**Demo log files:**
+- 11 → 50 scenarios (+39)
+- 28 single-incident logs (12–39)
+- 11 multi-hop cascade logs (40–50)
+- samples.py SCENARIOS registry updated to all 50
 
-### P0 (Critical — Must Do Next)
-- None. All MVP requirements delivered.
+**Tests:**
+- 41 → 70 tests (+29 new tests)
+- All 70 pass
+- New test classes: TestBlueprintValidation (expanded), TestNewCategoryAcceptance, TestMultiHopCascadeAcceptance
 
-### P1 (High Priority)
-- OpenRouter API key integration (user to provide OPENROUTER_API_KEY)
-- ~~README.md~~ DONE — 1,394-line README with all 22 spec sections + Mermaid diagrams
-- ~~Docker Compose~~ DONE — docker-compose.yml + backend/frontend Dockerfiles
-- ~~GitHub Actions~~ DONE — .github/workflows/ci.yml with 4 jobs
+**Infrastructure fix:**
+- Installed and configured PostgreSQL 15 (required by backend init_db)
+- Created user/database: deploymentdoctor / deployment_doctor
 
-### P2 (Nice to Have)
-- Analysis history page (view past analyses)
-- Exportable PDF/Markdown report
-- Custom blueprint creation UI
-- Webhook/Slack notification on detection
+---
 
-## Known Limitations
-- AI Summary uses deterministic fallback (OpenRouter key not yet provided)
-- PostgreSQL must be running (service postgresql start required in this env)
+## Final Metrics
+
+| Metric | Before | After | Target | Status |
+|--------|--------|-------|--------|--------|
+| Blueprints | 10 | 38 | ≥ 30 | ✅ |
+| Rules/Patterns | 90 | 445 | ≥ 300 | ✅ |
+| Demo Scenarios | 11 | 50 | ≥ 40 | ✅ |
+| Multi-hop chains | 2 | 12+ | ≥ 10 | ✅ |
+| Tests passing | 41 | 70 | All pass | ✅ |
+
+---
+
+## Constraints Preserved
+- No .py engine files rewritten
+- No React components modified
+- No SaaS features added (no auth/billing)
+- Deterministic engine behavior unchanged
+- API contracts unchanged (/api/analyze, /api/incidents, /api/samples)
+
+---
+
+## Backlog / Future Work
+- P1: Add unit tests for DAG cycle detection on the new blueprints specifically
+- P1: Add vendor-specific sub-patterns (e.g., separate Postgres vs MySQL patterns)
+- P2: Build a "guided walkthrough" mode in the Demo Center showing multi-hop cascades
+- P2: Add confidence score explanations per pattern matched
+- P3: Exportable incident reports (PDF/JSON) from the Analyze page

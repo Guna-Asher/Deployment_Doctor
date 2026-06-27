@@ -50,9 +50,64 @@ def make_blueprint(id_, severity="ERROR", incident_role="root_cause", priority=1
 
 class TestBlueprintValidation:
     def test_validates_production_blueprints(self):
-        """All 10 production blueprints must pass validation."""
+        """All production blueprints must pass validation (minimum 30 required)."""
         blueprints = validate_blueprints()
-        assert len(blueprints) == 10
+        assert len(blueprints) >= 30, f"Expected >= 30 blueprints, got {len(blueprints)}"
+
+    def test_total_rules_count(self):
+        """Total pattern rules across all blueprints must be >= 300."""
+        blueprints = validate_blueprints()
+        total = sum(len(bp.patterns) for bp in blueprints.values())
+        assert total >= 300, f"Expected >= 300 rules, got {total}"
+
+    def test_kubernetes_blueprints_present(self):
+        """All Kubernetes-specific blueprints must be loaded."""
+        blueprints = validate_blueprints()
+        k8s_ids = [
+            "POD_PENDING", "NODE_NOT_READY", "RESOURCE_QUOTA_EXCEEDED",
+            "POD_EVICTED", "LIVENESS_PROBE_FAILURE", "READINESS_PROBE_FAILURE",
+        ]
+        for id_ in k8s_ids:
+            assert id_ in blueprints, f"Missing K8s blueprint: {id_}"
+
+    def test_database_blueprints_present(self):
+        """All database-specific blueprints must be loaded."""
+        blueprints = validate_blueprints()
+        db_ids = ["DB_DEADLOCK", "DB_SLOW_QUERY", "DB_MIGRATION_FAILURE", "DB_REPLICATION_LAG"]
+        for id_ in db_ids:
+            assert id_ in blueprints, f"Missing database blueprint: {id_}"
+
+    def test_cache_messaging_blueprints_present(self):
+        """All cache and messaging blueprints must be loaded."""
+        blueprints = validate_blueprints()
+        ids = [
+            "REDIS_OOM", "REDIS_CONNECTION_TIMEOUT", "REDIS_REPLICATION_BROKEN",
+            "CONSUMER_LAG", "MESSAGE_BROKER_DOWN", "QUEUE_FULL",
+        ]
+        for id_ in ids:
+            assert id_ in blueprints, f"Missing cache/messaging blueprint: {id_}"
+
+    def test_cloud_and_tls_blueprints_present(self):
+        """All cloud and TLS/certificate blueprints must be loaded."""
+        blueprints = validate_blueprints()
+        cloud_ids = [
+            "CLOUD_IAM_DENIED", "OBJECT_STORAGE_ACCESS_FAILURE",
+            "CLOUD_RATE_LIMIT", "CAPACITY_EXCEEDED",
+            "SSL_TLS_CERTIFICATE_EXPIRED", "TLS_HANDSHAKE_FAILURE",
+        ]
+        for id_ in cloud_ids:
+            assert id_ in blueprints, f"Missing cloud/TLS blueprint: {id_}"
+
+    def test_application_and_networking_blueprints_present(self):
+        """All application and networking blueprints must be loaded."""
+        blueprints = validate_blueprints()
+        ids = [
+            "APPLICATION_STARTUP_FAILURE", "CONFIGURATION_VALIDATION_FAILURE",
+            "NETWORK_TIMEOUT", "HTTP_GATEWAY_ERROR",
+            "SERVICE_CIRCUIT_BREAKER_OPEN", "LOAD_BALANCER_UNHEALTHY",
+        ]
+        for id_ in ids:
+            assert id_ in blueprints, f"Missing application/networking blueprint: {id_}"
 
     def test_all_blueprints_have_required_fields(self):
         blueprints = validate_blueprints()
@@ -522,3 +577,214 @@ class TestAISummaryFallback:
         assert "Database Connection Failure" in summary
         assert "100%" in summary
         assert "CONFIDENT" in summary
+
+
+
+# ── New Category Acceptance Tests ─────────────────────────────────────────────
+
+class TestNewCategoryAcceptance:
+    """Acceptance tests for all newly added incident blueprint categories."""
+
+    def test_application_startup_failure_acceptance(self):
+        """12-application-startup-failure.log must detect APPLICATION_STARTUP_FAILURE."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "12-application-startup-failure.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="12-application-startup-failure.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "APPLICATION_STARTUP_FAILURE"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_configuration_validation_failure_acceptance(self):
+        """13-configuration-validation-failure.log must detect CONFIGURATION_VALIDATION_FAILURE."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "13-configuration-validation-failure.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="13-configuration-validation-failure.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "CONFIGURATION_VALIDATION_FAILURE"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_node_not_ready_acceptance(self):
+        """15-node-not-ready.log must detect NODE_NOT_READY."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "15-node-not-ready.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="15-node-not-ready.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "NODE_NOT_READY"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_pod_evicted_acceptance(self):
+        """17-pod-evicted.log must detect POD_EVICTED."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "17-pod-evicted.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="17-pod-evicted.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "POD_EVICTED"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_db_deadlock_acceptance(self):
+        """20-db-deadlock.log must detect DB_DEADLOCK."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "20-db-deadlock.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="20-db-deadlock.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "DB_DEADLOCK"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_db_migration_failure_acceptance(self):
+        """22-db-migration-failure.log must detect DB_MIGRATION_FAILURE."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "22-db-migration-failure.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="22-db-migration-failure.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "DB_MIGRATION_FAILURE"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_redis_oom_acceptance(self):
+        """24-redis-oom.log must detect REDIS_OOM."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "24-redis-oom.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="24-redis-oom.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "REDIS_OOM"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_message_broker_down_acceptance(self):
+        """28-message-broker-down.log must detect MESSAGE_BROKER_DOWN."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "28-message-broker-down.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="28-message-broker-down.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "MESSAGE_BROKER_DOWN"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_cloud_iam_denied_acceptance(self):
+        """30-cloud-iam-denied.log must detect CLOUD_IAM_DENIED."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "30-cloud-iam-denied.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="30-cloud-iam-denied.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "CLOUD_IAM_DENIED"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_ssl_tls_cert_expired_acceptance(self):
+        """34-ssl-tls-cert-expired.log must detect SSL_TLS_CERTIFICATE_EXPIRED."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "34-ssl-tls-cert-expired.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="34-ssl-tls-cert-expired.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "SSL_TLS_CERTIFICATE_EXPIRED"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_tls_handshake_failure_acceptance(self):
+        """35-tls-handshake-failure.log must detect TLS_HANDSHAKE_FAILURE."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "35-tls-handshake-failure.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="35-tls-handshake-failure.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "TLS_HANDSHAKE_FAILURE"
+        assert result.detection_status == "CONFIDENT"
+
+    def test_service_circuit_breaker_acceptance(self):
+        """38-service-circuit-breaker.log must detect SERVICE_CIRCUIT_BREAKER_OPEN."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "38-service-circuit-breaker.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="38-service-circuit-breaker.log"))
+        assert result.primary_incident is not None
+        assert result.primary_incident.blueprint_id == "SERVICE_CIRCUIT_BREAKER_OPEN"
+        assert result.detection_status == "CONFIDENT"
+
+
+# ── Multi-hop Cascade Acceptance Tests ────────────────────────────────────────
+
+class TestMultiHopCascadeAcceptance:
+    """Acceptance tests for multi-hop causal chain scenarios."""
+
+    def test_disk_db_cascade_acceptance(self):
+        """40-multi-disk-db-cascade.log: DISK_FULL is primary, CRASH_LOOP_BACKOFF contributing."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "40-multi-disk-db-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="40-multi-disk-db-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        all_ids = [result.primary_incident.blueprint_id] + [c.blueprint_id for c in result.contributing_incidents]
+        assert "DISK_FULL" in all_ids
+
+    def test_db_deadlock_cascade_acceptance(self):
+        """41-multi-db-deadlock-cascade.log: DB_SLOW_QUERY is primary, DB_DEADLOCK contributing (4-hop)."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "41-multi-db-deadlock-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="41-multi-db-deadlock-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        contributing_ids = [c.blueprint_id for c in result.contributing_incidents]
+        all_ids = [result.primary_incident.blueprint_id] + contributing_ids
+        assert "DB_DEADLOCK" in all_ids or "DB_SLOW_QUERY" in all_ids
+
+    def test_redis_replication_cascade_acceptance(self):
+        """42-multi-redis-cascade.log: REDIS_REPLICATION_BROKEN is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "42-multi-redis-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="42-multi-redis-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        all_ids = [result.primary_incident.blueprint_id] + [c.blueprint_id for c in result.contributing_incidents]
+        assert "REDIS_REPLICATION_BROKEN" in all_ids or "REDIS_CONNECTION_TIMEOUT" in all_ids
+
+    def test_tls_cascade_acceptance(self):
+        """43-multi-tls-cascade.log: SSL_TLS_CERTIFICATE_EXPIRED is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "43-multi-tls-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="43-multi-tls-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        all_ids = [result.primary_incident.blueprint_id] + [c.blueprint_id for c in result.contributing_incidents]
+        assert "SSL_TLS_CERTIFICATE_EXPIRED" in all_ids or "TLS_HANDSHAKE_FAILURE" in all_ids
+
+    def test_cloud_iam_cascade_acceptance(self):
+        """44-multi-cloud-iam-cascade.log: CLOUD_IAM_DENIED is primary (4-hop chain)."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "44-multi-cloud-iam-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="44-multi-cloud-iam-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        assert result.primary_incident.blueprint_id == "CLOUD_IAM_DENIED"
+
+    def test_config_cascade_acceptance(self):
+        """45-multi-config-cascade.log: CONFIGURATION_VALIDATION_FAILURE is primary (4-hop chain)."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "45-multi-config-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="45-multi-config-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        assert result.primary_incident.blueprint_id == "CONFIGURATION_VALIDATION_FAILURE"
+        contributing_ids = [c.blueprint_id for c in result.contributing_incidents]
+        assert len(contributing_ids) >= 1, "Multi-hop cascade must produce contributing incidents"
+
+    def test_network_gateway_cascade_acceptance(self):
+        """46-multi-network-gateway-cascade.log: NETWORK_TIMEOUT is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "46-multi-network-gateway-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="46-multi-network-gateway-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        all_ids = [result.primary_incident.blueprint_id] + [c.blueprint_id for c in result.contributing_incidents]
+        assert "NETWORK_TIMEOUT" in all_ids or "SERVICE_CIRCUIT_BREAKER_OPEN" in all_ids
+
+    def test_dns_tls_cascade_acceptance(self):
+        """47-multi-dns-tls-cascade.log: DNS_FAILURE is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "47-multi-dns-tls-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="47-multi-dns-tls-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        assert result.primary_incident.blueprint_id == "DNS_FAILURE"
+        contributing_ids = [c.blueprint_id for c in result.contributing_incidents]
+        all_ids = [result.primary_incident.blueprint_id] + contributing_ids
+        assert "TLS_HANDSHAKE_FAILURE" in all_ids or "AUTHENTICATION_FAILURE" in all_ids
+
+    def test_kafka_cascade_acceptance(self):
+        """48-multi-kafka-cascade.log: QUEUE_FULL is primary, MESSAGE_BROKER_DOWN contributing."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "48-multi-kafka-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="48-multi-kafka-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        all_ids = [result.primary_incident.blueprint_id] + [c.blueprint_id for c in result.contributing_incidents]
+        assert "QUEUE_FULL" in all_ids or "MESSAGE_BROKER_DOWN" in all_ids
+
+    def test_node_evict_cascade_acceptance(self):
+        """49-multi-node-evict-cascade.log: NODE_NOT_READY is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "49-multi-node-evict-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="49-multi-node-evict-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        assert result.primary_incident.blueprint_id == "NODE_NOT_READY"
+        contributing_ids = [c.blueprint_id for c in result.contributing_incidents]
+        assert "POD_EVICTED" in contributing_ids or "CRASH_LOOP_BACKOFF" in contributing_ids
+
+    def test_quota_cascade_acceptance(self):
+        """50-multi-quota-cascade.log: RESOURCE_QUOTA_EXCEEDED is primary."""
+        log = (Path(__file__).parent.parent / "sample-logs" / "50-multi-quota-cascade.log").read_text()
+        result = run_analysis(AnalysisRequest(log_content=log, filename="50-multi-quota-cascade.log"))
+        assert result.primary_incident is not None
+        assert result.detection_status == "CONFIDENT"
+        assert result.primary_incident.blueprint_id == "RESOURCE_QUOTA_EXCEEDED"
