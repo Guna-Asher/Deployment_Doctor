@@ -1,8 +1,9 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Build stage - Upgraded from node:18 to node:20 to support modern packages
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Installed dependencies without ignoring engine checks
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
