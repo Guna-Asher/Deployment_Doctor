@@ -1,517 +1,543 @@
 # Deployment Doctor
 
-**Deterministic Root Cause Analysis for Kubernetes and Cloud-Native Failures**
+> Deterministic Incident Intelligence for Kubernetes and Cloud-Native Platforms
 
-An open-source, production-grade incident detection engine that automates triage and root cause identification for deployment failures. Zero hallucinations. Full explainability. Complete auditability.
+<p align="center">
 
----
+[![Version](https://img.shields.io/badge/version-v2.0.0-blue)]()
+[![Python](https://img.shields.io/badge/python-3.11+-green)]()
+[![FastAPI](https://img.shields.io/badge/FastAPI-production-ready-009688)]()
+[![React](https://img.shields.io/badge/react-frontend-61DAFB)]()
+[![License](https://img.shields.io/badge/license-MIT-yellow)]()
+[![Coverage](https://img.shields.io/badge/coverage-90%25+-brightgreen)]()
 
-## Key Metrics
-
-| Metric | Value |
-|--------|-------|
-| **Incident Blueprints** | 38 |
-| **Detection Rules** | 445 |
-| **Relationship Edges** | 53 |
-| **Incident Scenarios** | 50 |
-| **Automated Tests** | 83 |
-| **Test Coverage** | 90%+ |
-| **Incident Categories** | 11 |
+</p>
 
 ---
 
-## Why Deployment Doctor Exists
+## What Is Deployment Doctor?
 
-When production deployments fail, SREs face an impossible question under pressure:
+Deployment Doctor is a deterministic incident diagnosis platform that transforms raw Kubernetes and cloud-native deployment logs into explainable, evidence-backed root cause analysis.
 
-**"What actually caused this?"**
-
-The industry's standard approaches all fail:
-
-| Approach | Problem |
-|----------|---------|
-| **Manual log reading** | Too slow, requires deep expertise, error-prone under pressure |
-| **Shell scripts / grep** | Single-pattern, no scoring, no relationship awareness |
-| **Commercial APM tools** | Require deep instrumentation, useless post-mortem |
-| **LLM-based log analysis** | Non-deterministic, hallucinate fixes, impossible to audit for compliance |
-
-Deployment Doctor solves this by implementing **deterministic incident diagnosis**—a fundamentally different approach:
-
-### The Deterministic Difference
-
-```
-Same log file → Same result. Every time. No exceptions.
-```
+Unlike traditional observability tools that surface symptoms, Deployment Doctor reconstructs failure chains, distinguishes root causes from downstream effects, and generates auditable diagnoses with complete reasoning transparency.
 
 Every conclusion is:
-- **Traceable** — backed by specific log lines with line numbers
-- **Explainable** — linked to named patterns with assigned weights
-- **Reproducible** — no runtime randomness, no AI influence
-- **Auditable** — complete decision trail for compliance and debugging
 
-### Core Value Proposition
+* Traceable
+* Explainable
+* Reproducible
+* Auditable
 
-```
-Deployment Doctor separates root causes from downstream symptoms,
-understands that one failure cascades into many,
-and produces a ranked diagnosis backed by evidence.
+No hallucinations.
 
-All without magic. All automatically. All deterministically.
-```
+No black-box scoring.
 
----
+No hidden reasoning.
 
-## How It Works
-
-### Detection Pipeline
-
-```
-Logs
-  ↓
-Pattern Matching (445 rules × every log line)
-  ↓
-Evidence Attribution (deduplicated, line-level proof)
-  ↓
-Confidence Scoring (transparent, weighted formula)
-  ↓
-Relationship Analysis (DAG validation, causality checks)
-  ↓
-Root Cause Ranking (penalties for symptoms, bonuses for chains)
-  ↓
-Incident Report (ranked findings + audit trail)
-```
-
-Each stage produces complete intermediate outputs. Every decision is traceable. Nothing is hidden.
+Just deterministic diagnosis.
 
 ---
 
-## Key Features
+## The Problem
 
-### 1. Deterministic Pattern Matching
-- 445 detection rules applied consistently to every log line
-- Zero non-determinism, zero randomness
-- Identical analysis for identical inputs, guaranteed
+When production deployments fail, teams rarely struggle to detect incidents.
 
-### 2. Evidence Attribution Engine
-- Every detected incident is backed by specific log lines
-- Line numbers and exact matches logged
-- Complete traceability for incident investigation
+They struggle to explain them.
 
-### 3. Confidence Scoring
-- Transparent, rule-based formula (no black boxes)
-- Component breakdown: pattern matches, relationship bonuses, role penalties
-- Explainable score justification for every incident
+A single infrastructure failure often triggers dozens of downstream symptoms:
 
-### 4. Relationship Analysis Engine
-- DAG-based incident reasoning
-- Automatically identifies cascading failures
-- Distinguishes root causes from downstream symptoms
-- Validates cause-effect chains against log proximity
-
-### 5. Root Cause Ranking
-- Penalizes symptom-role incidents (prevents false positives)
-- Bonuses for validated relationship chains
-- Deterministic tie-breaking
-- Clear ranking with confidence intervals
-
-### 6. Complete Audit Trail
-- Full decision log for every incident
-- Traceable scoring components
-- Compliance-ready logs for audit purposes
-
----
-
-## The Operational Knowledge Engine
-
-Deployment Doctor's core asset is its **Operational Knowledge Engine**—a curated library of incident patterns, rules, and relationships built from real-world Kubernetes and cloud-native failure modes.
-
-### Blueprint System
-
-**38 Incident Blueprints** cover common failure categories:
-
-- **Database Failures** (connection, pool exhaustion, unavailability)
-- **Networking Issues** (DNS resolution, firewall policies, latency)
-- **Container Failures** (CrashLoopBackOff, ImagePullBackOff, OOMKilled)
-- **Resource Constraints** (CPU throttling, memory pressure, disk space)
-- **Configuration Errors** (invalid secrets, bad config maps, version mismatches)
-- **Orchestration Issues** (pod eviction, node pressure, scheduling failures)
-- **And 5 more categories...**
-
-### Rule System
-
-**445 Detection Rules** translate business incident patterns into searchable log patterns:
-
-Each rule specifies:
-- Pattern text to match
-- Weight (importance)
-- Severity level
-- Category classification
-- Verification steps
-- Recommended fixes
-
-### Relationship Modeling
-
-**53 Relationship Edges** connect incidents in a directed acyclic graph:
-
-- DNS failure → causes → application connection failures
-- Resource exhaustion → causes → CrashLoopBackOff
-- Configuration error → causes → health check failures
-- **Complete causality chain for incident triage**
-
-### Evidence Attribution
-
-Every match includes:
-- Blueprint ID and name
-- Pattern that matched
-- Log line number and content
-- Confidence contribution
-- Role classification (root cause vs symptom)
-
----
-
-## Relationship Analysis: Understanding Cascades
-
-Deployment Doctor understands that **one failure cascades into many**.
-
-When DNS resolution fails, applications can't connect to databases. When databases become unavailable, applications crash. When applications crash, Kubernetes restarts them repeatedly (CrashLoopBackOff). A single root cause produces a waterfall of symptoms.
-
-### Multi-Hop Cascade Discovery
-
-The engine automatically identifies these chains:
-
+```text
+DNS Failure
+    ↓
+Database Connection Errors
+    ↓
+Application Timeouts
+    ↓
+CrashLoopBackOff
+    ↓
+Service Unavailable
 ```
+
+Most tools surface every symptom.
+
+Few identify the originating cause.
+
+Deployment Doctor was built to close the gap between detection and diagnosis.
+
+---
+
+## Why Existing Solutions Fall Short
+
+| Approach                   | Limitation                                                |
+| -------------------------- | --------------------------------------------------------- |
+| Manual Log Investigation   | Slow, expertise-dependent, inconsistent                   |
+| Shell Scripts & Grep       | Single-pattern visibility                                 |
+| Monitoring & APM Platforms | Excellent detection, limited diagnosis                    |
+| AI Log Analysis            | Non-deterministic, difficult to audit                     |
+| Deployment Doctor          | Deterministic, explainable, auditable root cause analysis |
+
+---
+
+# Platform Metrics
+
+| Metric              | Value |
+| ------------------- | ----- |
+| Incident Blueprints | 38    |
+| Detection Rules     | 445   |
+| Relationship Edges  | 53    |
+| Incident Scenarios  | 50    |
+| Automated Tests     | 83    |
+| Test Coverage       | 90%+  |
+| Incident Categories | 11    |
+
+---
+
+# Core Capabilities
+
+## Deterministic Analysis
+
+Identical logs always produce identical results.
+
+No randomness.
+
+No probabilistic interpretation.
+
+No model drift.
+
+---
+
+## Evidence Attribution
+
+Every incident is linked directly to:
+
+* Exact matching log entries
+* Source line numbers
+* Matching rule identifiers
+* Confidence contribution
+
+Every diagnosis can be independently verified.
+
+---
+
+## Confidence Scoring Engine
+
+Transparent weighted scoring system built from:
+
+* Pattern confidence
+* Relationship validation
+* Incident role weighting
+* Symptom penalties
+* Cascade bonuses
+
+No hidden scoring logic.
+
+---
+
+## Relationship Analysis Engine
+
+Deployment Doctor models incidents as a Directed Acyclic Graph (DAG).
+
+This enables:
+
+* Multi-hop cascade discovery
+* Root cause identification
+* Symptom suppression
+* Relationship validation
+* Dependency-aware ranking
+
+---
+
+## Root Cause Ranking
+
+The ranking engine prioritizes:
+
+* Upstream failures
+* Validated causality chains
+* Strong evidence density
+
+And suppresses:
+
+* Repeated symptoms
+* Cascading noise
+* Secondary failures
+
+---
+
+## Audit Trail Generation
+
+Every analysis produces:
+
+* Rule evaluations
+* Scoring breakdowns
+* Relationship validations
+* Evidence mappings
+* Final ranking decisions
+
+Complete transparency from input to conclusion.
+
+---
+
+# Operational Knowledge Engine
+
+The Operational Knowledge Engine is Deployment Doctor's core asset.
+
+It contains structured operational intelligence collected from real-world Kubernetes and cloud-native failure scenarios.
+
+## Knowledge Assets
+
+### Incident Blueprints
+
+38 production incident blueprints covering:
+
+* Container failures
+* Networking issues
+* Database outages
+* Resource exhaustion
+* Configuration errors
+* Storage failures
+* Orchestration issues
+* Security failures
+* Service discovery issues
+* Dependency failures
+* Platform instability
+
+---
+
+### Detection Rules
+
+445 deterministic detection rules.
+
+Each rule contains:
+
+* Match pattern
+* Severity
+* Category
+* Weight
+* Verification guidance
+* Remediation guidance
+
+---
+
+### Relationship Model
+
+53 causal relationships define how failures propagate through infrastructure systems.
+
+Example:
+
+```text
 DNS_FAILURE
-  ├─ causes ─> DB_CONNECTION_FAILURE
-  │               ├─ causes ─> CRASH_LOOP_BACKOFF
-  │               └─ causes ─> APPLICATION_TIMEOUT
-  └─ causes ─> SERVICE_UNAVAILABLE
+   ├── DB_CONNECTION_FAILURE
+   │       ├── APPLICATION_TIMEOUT
+   │       └── CRASH_LOOP_BACKOFF
+   │
+   └── SERVICE_UNAVAILABLE
 ```
 
-### Root Cause vs. Symptom Discrimination
-
-Incidents are classified as either:
-
-- **Root Cause**: The underlying failure (DNS down, config invalid, storage full)
-- **Symptom**: The downstream effect (CrashLoopBackOff, pod eviction, connection timeout)
-
-Ranking algorithm penalizes symptoms so that true root causes float to the top.
+This enables automated cascade reconstruction.
 
 ---
 
-## Architecture Overview
+# How Deployment Doctor Works
 
-### System Layers
-
-```
-┌─────────────────────────────────────┐
-│      Frontend (React)               │
-│  - Interactive incident dashboard   │
-│  - Cascade explorer                 │
-│  - Relationship graph viewer        │
-└──────────────┬──────────────────────┘
-               │ REST API
-┌──────────────▼──────────────────────┐
-│   Detection Engine (Python/FastAPI) │
-│  - Pattern Matching                 │
-│  - Evidence Attribution             │
-│  - Confidence Scoring               │
-│  - Relationship Analysis            │
-│  - Root Cause Ranking               │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│   Knowledge Base (incidents.json)   │
-│  - 38 blueprints                    │
-│  - 445 detection rules              │
-│  - 53 relationship edges            │
-│  - 11 incident categories           │
-└─────────────────────────────────────┘
+```text
+Raw Logs
+    │
+    ▼
+Pattern Matching Engine
+    │
+    ▼
+Evidence Attribution Engine
+    │
+    ▼
+Confidence Scoring Engine
+    │
+    ▼
+Relationship Analysis Engine
+    │
+    ▼
+Root Cause Ranking Engine
+    │
+    ▼
+Incident Report
 ```
 
-### Technology Stack
+Every stage produces traceable intermediate outputs.
 
-| Component | Technology |
-|-----------|-----------|
-| **Backend** | Python, FastAPI, PostgreSQL |
-| **Frontend** | React, Tailwind CSS |
-| **Deployment** | Docker, Docker Compose, Kubernetes |
-| **Testing** | pytest (backend), Jest (frontend) |
-| **Rules Engine** | Custom deterministic pattern matcher |
+Nothing is hidden.
 
 ---
 
-## Screenshots
+# Architecture
 
-### Landing Dashboard
-*Interactive incident overview with severity indicators and cascade visualization*
+```text
+┌─────────────────────────────────────────────┐
+│                React Frontend               │
+│                                             │
+│ Dashboard • Incident Explorer • Graph UI    │
+└─────────────────────┬───────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────┐
+│                FastAPI API                  │
+└─────────────────────┬───────────────────────┘
+                      │
+      ┌───────────────┼───────────────┐
+      ▼               ▼               ▼
 
-[Dashboard View Placeholder]
+ Pattern Engine   Relationship   Scoring Engine
+                  Engine
 
-### Incident Analysis
-*Detailed breakdown of detected incidents with evidence attribution and scoring components*
+      └───────────────┼───────────────┘
+                      ▼
 
-[Incident Details Placeholder]
+      Operational Knowledge Engine
 
-### Operational Knowledge Library
-*Browsable catalog of 38 incident blueprints with rules, verification steps, and recommended fixes*
-
-[Knowledge Library Placeholder]
-
-### Cascade Explorer
-*Visual representation of incident relationships and failure cascades*
-
-[Cascade Graph Placeholder]
-
-### Relationship Graph
-*Interactive DAG visualization of incident dependencies*
-
-[Relationship Graph Placeholder]
+       38 Blueprints
+       445 Rules
+       53 Relationships
+```
 
 ---
 
-## Quick Start
+# Technology Stack
 
-### 1. Clone the Repository
+| Layer            | Technology                       |
+| ---------------- | -------------------------------- |
+| Backend          | Python, FastAPI                  |
+| Frontend         | React, Tailwind CSS              |
+| Database         | PostgreSQL                       |
+| Containerization | Docker                           |
+| Orchestration    | Kubernetes                       |
+| Testing          | Pytest, Jest                     |
+| Analysis Engine  | Custom Deterministic Rule Engine |
+
+---
+
+# Product Walkthrough
+
+## Executive Dashboard
+
+Monitor incidents, severity trends, and root cause rankings.
+
+> Screenshot Placeholder
+
+---
+
+## Incident Explorer
+
+Inspect evidence, confidence scoring, and diagnosis details.
+
+> Screenshot Placeholder
+
+---
+
+## Cascade Explorer
+
+Visualize failure propagation across systems.
+
+> Screenshot Placeholder
+
+---
+
+## Knowledge Library
+
+Browse blueprints, rules, relationships, and remediation guidance.
+
+> Screenshot Placeholder
+
+---
+
+# Quick Start
+
+## Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/deployment-doctor.git
+git clone https://github.com/YOUR_USERNAME/deployment-doctor.git
+
 cd deployment-doctor
 ```
 
-### 2. Local Development Setup
+---
+
+## Backend Setup
 
 ```bash
-# Backend setup
 cd backend
-python3 -m venv venv
+
+python -m venv venv
+
 source venv/bin/activate
+
 pip install -r requirements.txt
 
-# Run backend
 python server.py
 ```
 
+---
+
+## Frontend Setup
+
 ```bash
-# Frontend setup (in new terminal)
 cd frontend
+
 npm install
+
 npm start
 ```
 
-Backend API: `http://localhost:8000`  
-Frontend: `http://localhost:3000`
+---
 
-### 3. Try an Analysis
-
-Upload a Kubernetes deployment log via the web interface, or use the API:
+## Analyze Logs
 
 ```bash
 curl -X POST http://localhost:8000/api/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"log_content": "your log content here"}'
+-H "Content-Type: application/json" \
+-d '{
+"log_content":"sample log"
+}'
 ```
 
 ---
 
-## Docker Setup
+# API Overview
 
-### Docker Compose (Recommended)
+## Health Check
 
-```bash
-# Start all services
-docker-compose up
-
-# Access services
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Health: http://localhost:8000/api/health
-```
-
-### Individual Containers
-
-```bash
-# Build images
-docker build -t deployment-doctor-backend ./backend
-docker build -t deployment-doctor-frontend ./frontend
-
-# Run containers
-docker run -p 8000:8000 deployment-doctor-backend
-docker run -p 3000:3000 deployment-doctor-frontend
-```
-
----
-
-## API Overview
-
-### Health Check
-
-```bash
+```http
 GET /api/health
 ```
 
-Returns engine status, blueprints loaded, rules loaded.
+Returns:
 
-### Analyze Logs
+* Engine status
+* Blueprint count
+* Rule count
+* System health
 
-```bash
+---
+
+## Analyze Logs
+
+```http
 POST /api/analyze
-Content-Type: application/json
-
-{
-  "log_content": "string: raw log text"
-}
 ```
 
-Returns detected incidents, confidence scores, evidence, relationships, and full audit trail.
+Returns:
 
-### Sample Scenarios
+* Root causes
+* Symptoms
+* Confidence scores
+* Evidence mappings
+* Relationship chains
+* Audit trail
 
-```bash
+---
+
+## Sample Scenarios
+
+```http
 GET /api/samples
 ```
 
-Returns 50 pre-configured incident scenarios for testing.
+Returns 50 production-inspired incident scenarios.
 
-### Incident Knowledge Base
+---
 
-```bash
+## Knowledge Base
+
+```http
 GET /api/incidents
 ```
 
-Returns all 38 blueprints with rules, relationships, verification steps, and fixes.
+Returns all blueprints, rules, relationships, and remediation guidance.
 
 ---
 
-## Testing
+# Engineering Highlights
 
-### Run Backend Tests
-
-```bash
-cd backend
-pytest tests/ -v
-```
-
-**Coverage**: 90%+  
-**Test Count**: 83 automated tests
-
-### Run Frontend Tests
-
-```bash
-cd frontend
-npm test
-```
+* Deterministic diagnosis architecture
+* DAG-based relationship analysis
+* Explainable confidence scoring
+* Evidence attribution framework
+* Root cause prioritization
+* Audit-grade traceability
+* API-first architecture
+* Kubernetes-ready deployment model
+* Production-grade testing strategy
 
 ---
 
-## Project Structure
+# Competitive Differentiators
 
-```
-deployment-doctor/
-├── backend/                    # Python FastAPI backend
-│   ├── app/
-│   │   ├── api/               # API endpoints
-│   │   ├── services/          # Core engines
-│   │   │   ├── root_cause_engine.py
-│   │   │   ├── pattern_matcher.py
-│   │   │   ├── relationship_engine.py
-│   │   │   ├── scoring_engine.py
-│   │   │   └── blueprint_validator.py
-│   │   ├── models.py          # Data structures
-│   │   ├── schemas.py         # API schemas
-│   │   └── database.py        # DB models
-│   ├── rules/
-│   │   └── incidents.json     # Knowledge base
-│   └── tests/                 # Unit tests
-├── frontend/                   # React frontend
-│   ├── src/
-│   │   ├── components/        # UI components
-│   │   ├── pages/             # Page views
-│   │   └── hooks/             # Custom hooks
-│   └── public/
-├── docs/                       # Documentation
-│   ├── ARCHITECTURE.md
-│   ├── KNOWLEDGE_ENGINE.md
-│   ├── RELATIONSHIP_ANALYSIS.md
-│   ├── ACQUISITION_OVERVIEW.md
-│   └── PROJECT_METRICS.md
-├── docker-compose.yml         # Multi-container setup
-└── README.md                  # This file
-```
+| Capability            | Deployment Doctor | Traditional APM | AI Log Analysis |
+| --------------------- | ----------------- | --------------- | --------------- |
+| Deterministic         | ✅                 | ✅               | ❌               |
+| Explainable           | ✅                 | Partial         | ❌               |
+| Auditable             | ✅                 | Limited         | ❌               |
+| Root Cause Focus      | ✅                 | Partial         | Partial         |
+| Relationship Analysis | ✅                 | Limited         | Limited         |
+| Hallucination Free    | ✅                 | ✅               | ❌               |
 
 ---
 
-## Documentation
+# Roadmap
 
-Comprehensive documentation is provided:
+## v2.x
 
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** — Detailed technical breakdown of the detection pipeline, scoring model, and relationship analysis engine
-- **[KNOWLEDGE_ENGINE.md](docs/KNOWLEDGE_ENGINE.md)** — Complete reference for the 38 incident blueprints, 445 rules, and 53 relationships
-- **[RELATIONSHIP_ANALYSIS.md](docs/RELATIONSHIP_ANALYSIS.md)** — Deep dive into DAG modeling, cascade detection, and root cause identification
-- **[ACQUISITION_OVERVIEW.md](docs/ACQUISITION_OVERVIEW.md)** — Product summary for technical evaluators and buyers
-- **[PROJECT_METRICS.md](docs/PROJECT_METRICS.md)** — Automated metrics and statistics on the knowledge base
+* Rule Builder Studio
+* Historical Incident Analytics
+* Advanced Cascade Visualization
+* Multi-Tenant Deployments
+* Kubernetes Operator
+* Distributed Correlation Engine
 
----
+## Long-Term Vision
 
-## Roadmap
+Deployment Doctor aims to become the operational intelligence layer for cloud-native infrastructure.
 
-### Current (v1.6.0)
+Not merely detecting incidents.
 
-- ✅ Deterministic pattern matching engine
-- ✅ Evidence attribution system
-- ✅ Confidence scoring with transparent formula
-- ✅ DAG-based relationship analysis
-- ✅ Root cause ranking algorithm
-- ✅ Complete audit trail logging
-- ✅ Interactive dashboard
-- ✅ API-first architecture
-
-### Future
-
-- **v1.7.0**: Custom rule builder UI
-- **v1.8.0**: Kubernetes operator for cluster-native integration
-- **v1.9.0**: Multi-tenant deployment
-- **v2.0.0**: Machine learning enhancement (optional, opt-in)
+Explaining them.
 
 ---
 
-## Contributing
+# Contributing
 
-Contributions are welcome! Areas for contribution:
+Contributions are welcome.
 
-- **New incident blueprints** (add to `backend/rules/incidents.json`)
-- **Detection rules** (additional patterns for existing blueprints)
-- **Test scenarios** (improve coverage)
-- **Documentation** (clarify existing docs or add new guides)
-- **Frontend features** (new visualizations, dashboards)
+Areas of contribution include:
 
-Please open an issue to discuss major changes before submitting a pull request.
-
----
-
-## License
-
-This project is licensed under the MIT License. See LICENSE file for details.
+* New incident blueprints
+* Detection rules
+* Relationship models
+* Test scenarios
+* Documentation improvements
+* Frontend enhancements
 
 ---
 
-## Support
+# License
 
-- 📖 **Documentation**: See [docs/](docs/) directory
-- 🐛 **Issues**: GitHub Issues
-- 💬 **Discussions**: GitHub Discussions
-- 📧 **Contact**: [Contact information]
+MIT License
 
----
-
-## Acknowledgments
-
-Built for SREs, DevOps engineers, and platform teams managing cloud-native infrastructure. 
-
-Deployment Doctor exists because production incidents deserve transparent, deterministic analysis—not guesses wrapped in confidence scores.
+See LICENSE for details.
 
 ---
 
-**Last Updated**: June 2026  
-**Current Version**: 1.6.0  
-**Incident Blueprints**: 38  
-**Detection Rules**: 445
+# Built For
+
+* Site Reliability Engineers
+* Platform Engineers
+* DevOps Teams
+* Infrastructure Architects
+* Cloud Operations Teams
+
+---
+
+## Philosophy
+
+Production incidents deserve evidence.
+
+Not guesses.
+
+Deployment Doctor exists to make incident diagnosis deterministic, explainable, and trustworthy.
