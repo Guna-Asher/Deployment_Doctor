@@ -1,0 +1,13 @@
+2024-01-15 14:00:00.001 INFO  [app] Application started. Processing large dataset...
+2024-01-15 14:00:15.001 INFO  [jvm] Heap utilization: 87% — approaching limit
+2024-01-15 14:00:30.001 WARN  [jvm] Heap utilization: 95% — GC pressure increasing
+2024-01-15 14:00:45.001 ERROR [jvm] java.lang.OutOfMemoryError: Java heap space
+2024-01-15 14:00:45.234 ERROR [jvm] java.lang.OutOfMemoryError: GC overhead limit exceeded
+2024-01-15 14:00:45.456 ERROR [kernel] Out of memory: Kill process 1234 (java) score 900
+2024-01-15 14:00:45.789 ERROR [kernel] Killed process 1234 (java) total-vm:4096000kB
+2024-01-15 14:00:46.001 ERROR [kubelet] OOMKilled: container api-worker was OOMKilled
+2024-01-15 14:00:46.234 ERROR [kubelet] container OOMKilled — memory limit exceeded (limit: 512Mi)
+2024-01-15 14:00:46.456 ERROR [kubelet] Exited with OOMKilled — container memory.limit_in_bytes exceeded
+2024-01-15 14:00:46.789 WARN  [node] oom-killer invoked: oom_score_adj=0 for pid 1234
+2024-01-15 14:00:47.001 ERROR [proc] cannot allocate memory — heap exhausted after GC cycle
+2024-01-15 14:00:47.234 FATAL [app] Process killed by OOM killer. memory limit exceeded. Core dump saved.

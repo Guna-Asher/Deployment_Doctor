@@ -1,4 +1,8 @@
+
 # Build stage - Upgraded from node:18 to node:20 to support modern packages
+
+# Build stage
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app

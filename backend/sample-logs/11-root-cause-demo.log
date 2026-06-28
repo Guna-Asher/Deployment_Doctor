@@ -1,0 +1,29 @@
+2024-01-15 20:00:00.001 INFO  [app] api-deployment starting — connecting to services
+2024-01-15 20:00:00.123 INFO  [db] Connecting to postgres-primary:5432...
+2024-01-15 20:00:00.456 ERROR [db] connection refused (postgres-primary:5432) — retry 1
+2024-01-15 20:00:01.001 ERROR [db] could not connect to server: Connection refused
+2024-01-15 20:00:01.234 ERROR [db] database connection failed: host postgres-primary unreachable
+2024-01-15 20:00:01.678 ERROR [pool] ECONNREFUSED 10.0.1.20:5432
+2024-01-15 20:00:02.001 ERROR [db] unable to connect to database after all retry attempts
+2024-01-15 20:00:02.345 ERROR [pool] connection pool exhausted — returning error to all waiters
+2024-01-15 20:00:02.678 ERROR [app] Database initialization failed — service cannot start
+2024-01-15 20:00:03.001 WARN  [kubelet] Container api-server terminated with exit code 1
+2024-01-15 20:00:03.234 INFO  [k8s] Scheduling restart of api-server (attempt 1)
+2024-01-15 20:00:05.001 INFO  [app] api-deployment restarting — reconnecting to services
+2024-01-15 20:00:05.456 ERROR [db] database connection failed: connection refused
+2024-01-15 20:00:05.789 ERROR [pool] ECONNREFUSED — postgres-primary:5432 still unreachable
+2024-01-15 20:00:06.001 ERROR [app] Startup failed again — database connection failed
+2024-01-15 20:00:06.345 ERROR [kubelet] container terminated with exit code 1 — api-server
+2024-01-15 20:00:06.678 WARN  [kubelet] Back-off restarting failed container api-server in pod api-deployment-5f9d
+2024-01-15 20:00:07.001 INFO  [k8s] Scheduling restart of api-server (attempt 2)
+2024-01-15 20:00:10.001 ERROR [db] connection refused (postgres-primary:5432) — startup attempt 3
+2024-01-15 20:00:10.234 ERROR [db] database connection failed — cannot initialize connection pool
+2024-01-15 20:00:10.456 ERROR [kubelet] Error: failed to start container "api-server": exit status 1
+2024-01-15 20:00:10.789 ERROR [kubelet] container terminated with exit code 1 — api-server
+2024-01-15 20:00:11.001 WARN  [kubelet] Back-off restarting failed container api-server in pod api-deployment-5f9d
+2024-01-15 20:00:11.234 ERROR [k8s] CrashLoopBackOff: back-off 2m0s restarting failed container=api-server
+2024-01-15 20:00:11.456 ERROR [k8s] pod api-deployment-5f9d is in a restart loop — CrashLoopBackOff
+2024-01-15 20:00:11.789 WARN  [events] Back-off restarting failed container — reason: database connection failed
+2024-01-15 20:00:12.001 ERROR [kubelet] Liveness probe failed: connection refused on /healthz
+2024-01-15 20:00:12.234 ERROR [k8s] container exited with error: api-server restart count: 5
+2024-01-15 20:00:12.456 FATAL [ops] Pod stuck in CrashLoopBackOff — root cause: database connection failure

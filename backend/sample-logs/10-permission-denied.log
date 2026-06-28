@@ -1,0 +1,13 @@
+2024-01-15 19:00:00.001 INFO  [app] Starting application container (non-root user: uid=1000)
+2024-01-15 19:00:00.234 ERROR [fs] Permission denied: cannot read file /etc/secrets/api-key
+2024-01-15 19:00:00.456 ERROR [fs] EACCES: open '/var/log/app/access.log' — Permission denied
+2024-01-15 19:00:01.001 ERROR [db] Permission denied: cannot write to /var/lib/postgresql/data
+2024-01-15 19:00:01.234 ERROR [sock] Operation not permitted: bind to socket /var/run/app.sock
+2024-01-15 19:00:01.678 ERROR [fs] EPERM: unlink '/etc/app/config.lock' — Operation not permitted
+2024-01-15 19:00:02.001 ERROR [rbac] access is denied: service account lacks write permission on resource
+2024-01-15 19:00:02.456 ERROR [policy] denied by policy: PodSecurityPolicy requires non-root user
+2024-01-15 19:00:02.789 ERROR [config] insufficient privileges: cannot read Kubernetes secret api-credentials
+2024-01-15 19:00:03.001 ERROR [fs] cannot read file /proc/1/environ — Permission denied
+2024-01-15 19:00:03.456 ERROR [net] EACCES: permission denied opening raw socket
+2024-01-15 19:00:04.001 ERROR [auth] you do not have permission to access this resource: /admin
+2024-01-15 19:00:04.456 FATAL [app] Critical permission errors — application cannot initialize. Check securityContext.
