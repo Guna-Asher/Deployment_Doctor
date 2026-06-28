@@ -1,0 +1,15 @@
+2026-01-16T06:00:00.001Z [INFO]  service=api-gateway Initiating HTTPS connection to payments.example.com:443
+2026-01-16T06:00:00.050Z [ERROR] service=api-gateway x509: certificate has expired or is not yet valid: current time 2026-01-16T06:00:00Z is after 2026-01-01T00:00:00Z
+2026-01-16T06:00:00.051Z [ERROR] service=api-gateway certificate has expired: TLS certificate for payments.example.com expired on 2026-01-01
+2026-01-16T06:00:00.052Z [ERROR] service=api-gateway TLS certificate expired: certificate issued by Let's Encrypt expired 15 days ago
+2026-01-16T06:00:00.100Z [ERROR] service=api-gateway SSL certificate expiration: cert for *.payments.example.com expired 2026-01-01T00:00:00Z
+2026-01-16T06:00:00.101Z [ERROR] service=api-gateway certificate is expired: refusing connection to expired endpoint
+2026-01-16T06:00:00.200Z [WARN]  cert-manager namespace=production certificate orders-tls: certificate expiry in -15 days (EXPIRED)
+2026-01-16T06:00:00.201Z [ERROR] cert-manager namespace=production Failed to renew certificate orders-tls: ACME challenge failed
+2026-01-16T06:00:00.300Z [ERROR] service=api-gateway SSL_ERROR_EXPIRED_CERT_ALERT: remote peer rejected connection due to expired certificate
+2026-01-16T06:00:00.301Z [ERROR] service=api-gateway cert: expired — hostname=payments.example.com notAfter=2026-01-01T00:00:00Z
+2026-01-16T06:00:00.400Z [ERROR] service=payment-client TLS handshake failed: certificate has expired
+2026-01-16T06:00:00.401Z [ERROR] service=payment-client certificate validity expired: cannot establish secure connection
+2026-01-16T06:00:00.500Z [ERROR] service=api-gateway your certificate is not valid: verify certificate chain
+2026-01-16T06:00:00.501Z [ERROR] service=api-gateway certificate has expired or is not yet valid — rejecting connection
+2026-01-16T06:00:00.502Z [ERROR] service=api-gateway authentication failed: SSL certificate presented is expired

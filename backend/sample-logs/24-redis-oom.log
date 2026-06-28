@@ -1,0 +1,15 @@
+2026-01-15T20:00:00.001Z [INFO]  redis=redis-master-01 * Ready to accept connections
+2026-01-15T20:00:00.002Z [INFO]  redis=redis-master-01 used_memory=3221225472 maxmemory=3221225472 (100%)
+2026-01-15T20:00:01.000Z [ERROR] redis=redis-master-01 OOM command not allowed when used memory > 'maxmemory'
+2026-01-15T20:00:01.001Z [ERROR] service=session-store ERR command not allowed when used memory > 'maxmemory'. used_memory > maxmemory
+2026-01-15T20:00:01.002Z [ERROR] service=session-store redis: OOM — SET command rejected: maxmemory limit hit
+2026-01-15T20:00:01.003Z [WARN]  redis=redis-master-01 used_memory_rss exceeds: 3.4GB (maxmemory=3GB)
+2026-01-15T20:00:01.004Z [ERROR] redis=redis-master-01 MISCONF Redis is configured to save RDB snapshots but cannot write to disk
+2026-01-15T20:00:01.005Z [ERROR] redis=redis-master-01 redis ran out of memory: eviction policy is 'noeviction', writes blocked
+2026-01-15T20:00:01.006Z [WARN]  redis=redis-master-01 maxmemory exceeded: eviction of keys would occur under 'allkeys-lru' policy
+2026-01-15T20:00:01.007Z [ERROR] redis=redis-master-01 redis memory limit reached: cannot allocate new object
+2026-01-15T20:00:02.000Z [ERROR] service=session-store redis connection timeout: server not responding (OOM state)
+2026-01-15T20:00:02.001Z [ERROR] service=session-store out of memory, consider using eviction or increasing maxmemory
+2026-01-15T20:00:02.002Z [ERROR] service=session-store maxmemory exceeded: Redis rejected write command
+2026-01-15T20:00:05.000Z [ERROR] service=session-store failed to initialize: redis OOM prevents session storage writes
+2026-01-15T20:00:05.001Z [INFO]  k8s-event pod=session-store-1 CrashLoopBackOff

@@ -1,0 +1,23 @@
+
+=== 3-hop cascade: RESOURCE_QUOTA_EXCEEDED → POD_EVICTED → CRASH_LOOP_BACKOFF ===
+Root cause: Namespace quota breached under load → pods evicted to enforce quota → evicted pods crash-loop.
+
+2026-01-16T22:00:00.001Z [INFO]  k8s-scheduler namespace=development Attempting to schedule 5 new pods
+2026-01-16T22:00:00.010Z [ERROR] k8s-api-server namespace=development pods is forbidden: exceeded quota: namespace development quota reached
+2026-01-16T22:00:00.011Z [ERROR] k8s-event namespace=development resource quota exceeded: 10/10 pods used (hard limit)
+2026-01-16T22:00:00.012Z [ERROR] k8s-event namespace=development would exceed resourcequota: pods (used=10, hard=10)
+2026-01-16T22:00:00.013Z [ERROR] k8s-event namespace=development forbidden: exceeded quota for new pod admission
+2026-01-16T22:00:00.014Z [ERROR] k8s-api-server namespace=development ResourceQuota exceeded: limits.cpu (used=7800m, hard=8000m)
+2026-01-16T22:00:00.015Z [ERROR] k8s-event namespace=development cpu resource quota at 97%: hard limit approaching
+2026-01-16T22:00:00.016Z [ERROR] k8s-event namespace=development namespace resource quota: memory requests.memory at 95%
+2026-01-16T22:00:00.017Z [WARN]  k8s-scheduler namespace=development no nodes available to schedule pods: quota constraint
+2026-01-16T22:00:05.000Z [ERROR] k8s-kubelet namespace=development eviction threshold has been met: LimitRanger enforcing
+2026-01-16T22:00:05.001Z [ERROR] k8s-event pod=batch-worker-q1 pod evicted: resource quota exceeded for namespace
+2026-01-16T22:00:05.002Z [ERROR] k8s-event pod=batch-worker-q1 Evicted: exceeded quota — namespace memory limit enforced
+2026-01-16T22:00:05.003Z [ERROR] k8s-event pod=batch-worker-q2 The node was low on resource: memory quota exhausted
+2026-01-16T22:00:05.004Z [ERROR] k8s-event pod=batch-worker-q2 pod eviction triggered: namespace quota enforcement
+2026-01-16T22:00:05.005Z [ERROR] k8s-event pod=batch-worker-q2 pod evicted: hard eviction threshold enforced by quota controller
+2026-01-16T22:00:10.000Z [INFO]  k8s-event pod=batch-worker-q1 Back-off restarting failed container
+2026-01-16T22:00:10.001Z [WARN]  k8s-event pod=batch-worker-q1 pod restart count: 1
+2026-01-16T22:00:10.002Z [INFO]  k8s-event pod=batch-worker-q1 CrashLoopBackOff
+2026-01-16T22:00:10.003Z [ERROR] k8s-event pod=batch-worker-q2 pod is in a restart loop: quota eviction cycle

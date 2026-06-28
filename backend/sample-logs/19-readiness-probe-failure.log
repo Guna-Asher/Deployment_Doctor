@@ -1,0 +1,15 @@
+2026-01-15T15:00:00.001Z [INFO]  service=inventory-svc pod=inventory-svc-2a3b4c Starting container
+2026-01-15T15:00:01.000Z [INFO]  service=inventory-svc Connecting to database...
+2026-01-15T15:00:01.500Z [WARN]  service=inventory-svc Database not yet available — will retry
+2026-01-15T15:00:10.000Z [WARN]  k8s-kubelet pod=inventory-svc-2a3b4c Readiness probe failed: HTTP probe failed with statuscode: 503
+2026-01-15T15:00:15.000Z [WARN]  k8s-kubelet pod=inventory-svc-2a3b4c readiness: HTTP probe failed for /ready — returned 503
+2026-01-15T15:00:20.000Z [WARN]  k8s-kubelet pod=inventory-svc-2a3b4c readiness probe failing: consecutive failures=2
+2026-01-15T15:00:20.001Z [WARN]  k8s-event pod=inventory-svc-2a3b4c pod not ready — removing from service endpoints
+2026-01-15T15:00:20.002Z [WARN]  k8s-event pod=inventory-svc-2a3b4c removing pod from service endpoints: inventory-svc
+2026-01-15T15:00:25.000Z [WARN]  k8s-kubelet pod=inventory-svc-2a3b4c readiness: exec probe failed: exit code 1
+2026-01-15T15:00:30.000Z [ERROR] k8s-event pod=inventory-svc-2a3b4c Unhealthy: Readiness probe failed: HTTP probe failed with statuscode: 503
+2026-01-15T15:00:30.001Z [ERROR] k8s-event pod=inventory-svc-2a3b4c container failed readiness probe: pod is not ready
+2026-01-15T15:00:30.002Z [WARN]  k8s-event pod=inventory-svc-2a3b4c endpoint not ready — traffic suspended to this pod
+2026-01-15T15:00:35.000Z [ERROR] k8s-event pod=inventory-svc-2a3b4c failed readiness check: 5 consecutive failures
+2026-01-15T15:00:35.001Z [WARN]  k8s-event pod=inventory-svc-2a3b4c unhealthy after readiness probe: pod excluded from loadbalancing
+2026-01-15T15:00:40.000Z [ERROR] k8s-event pod=inventory-svc-2a3b4c readiness probe returned failure — no traffic will be routed to pod

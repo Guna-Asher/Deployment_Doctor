@@ -1,0 +1,13 @@
+2026-01-15T12:00:00.001Z [INFO]  k8s-event namespace=staging Deployment/data-processor scaled to 10 replicas
+2026-01-15T12:00:00.050Z [ERROR] k8s-event pod=data-processor-aaa111 FailedCreate: pods is forbidden: exceeded quota: namespace=staging, resource=pods
+2026-01-15T12:00:00.051Z [ERROR] k8s-api-server namespace=staging pods is forbidden: exceeded quota: resource quota exceeded (quota.pods: 8, requested: 1, used: 8)
+2026-01-15T12:00:00.052Z [ERROR] k8s-event namespace=staging would exceed resourcequota: quota.pods max=8, current=8
+2026-01-15T12:00:00.053Z [WARN]  k8s-scheduler namespace=staging resource quota exceeded — cannot admit new pod
+2026-01-15T12:00:00.100Z [ERROR] k8s-event namespace=staging resource quota exceeded: limits.cpu (requested: 1, used: 7.5, max: 8)
+2026-01-15T12:00:00.101Z [ERROR] k8s-event namespace=staging resource quota exceeded: requests.memory (requested: 2Gi, used: 14Gi, max: 16Gi)
+2026-01-15T12:00:05.000Z [WARN]  k8s-controller namespace=staging ResourceQuota enforcement: new pods blocked until quota is freed
+2026-01-15T12:00:10.000Z [ERROR] k8s-event pod=data-processor-bbb222 FailedScheduling: namespace resource quota would exceed resourcequota
+2026-01-15T12:00:15.000Z [ERROR] k8s-event pod=data-processor-ccc333 FailedScheduling: exceeded quota — pod cannot be scheduled
+2026-01-15T12:00:20.000Z [WARN]  k8s-event namespace=staging ResourceQuota: memory resource quota near limit (14/16 Gi used)
+2026-01-15T12:00:25.000Z [WARN]  k8s-event namespace=staging cpu resource quota at 93% — approaching hard limit
+2026-01-15T12:00:30.000Z [ERROR] k8s-event namespace=staging forbidden: exceeded quota for new deployment rollout

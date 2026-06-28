@@ -1,0 +1,11 @@
+2024-01-15 11:00:00.001 INFO  [app] Booting application...
+2024-01-15 11:00:00.123 INFO  [net] Resolving hostname: postgres-service.default.svc.cluster.local
+2024-01-15 11:00:00.456 ERROR [dns] dns lookup failed: no such host "postgres-service.default.svc.cluster.local"
+2024-01-15 11:00:01.001 ERROR [net] getaddrinfo ENOTFOUND postgres-service.default.svc.cluster.local
+2024-01-15 11:00:01.567 ERROR [dns] Name or service not known: redis-master.cache.svc.cluster.local
+2024-01-15 11:00:02.001 ERROR [http] Could not resolve host: api-gateway.internal
+2024-01-15 11:00:02.456 ERROR [dns] Temporary failure in name resolution for: metrics-service
+2024-01-15 11:00:03.001 ERROR [grpc] failed to resolve hostname: grpc.backend.svc
+2024-01-15 11:00:03.567 ERROR [dns] NXDOMAIN for query: auth-service.production.svc.cluster.local
+2024-01-15 11:00:04.001 ERROR [net] dial tcp: lookup payment-service on 10.96.0.10:53: no such host
+2024-01-15 11:00:04.456 FATAL [app] Cannot proceed: all service DNS lookups failed

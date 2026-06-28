@@ -1,0 +1,22 @@
+
+=== 3-hop cascade: SSL_TLS_CERTIFICATE_EXPIRED → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE ===
+Root cause: Expired certificate causes TLS negotiation to fail → authentication errors.
+
+2026-01-16T15:00:00.001Z [INFO]  cert-manager namespace=production Checking certificate expiry for api-tls
+2026-01-16T15:00:00.010Z [ERROR] cert-manager namespace=production certificate has expired: api-tls expired 2025-12-31T23:59:59Z
+2026-01-16T15:00:00.011Z [ERROR] cert-manager namespace=production TLS certificate expired: api.example.com certificate not renewed
+2026-01-16T15:00:00.012Z [ERROR] cert-manager namespace=production x509: certificate has expired: notAfter=2025-12-31T23:59:59Z
+2026-01-16T15:00:00.013Z [ERROR] cert-manager namespace=production certificate is expired: ACME renewal failed — HTTP-01 challenge blocked
+2026-01-16T15:00:00.014Z [ERROR] cert-manager namespace=production SSL certificate expiration: 16 days past expiry
+2026-01-16T15:00:00.015Z [ERROR] cert-manager namespace=production certificate expiry alert: api-tls EXPIRED
+2026-01-16T15:00:00.016Z [ERROR] cert-manager namespace=production certificate has expired or is not yet valid — renewal required
+2026-01-16T15:00:00.017Z [ERROR] cert-manager namespace=production cert: expired — hostname api.example.com notAfter=2025-12-31
+2026-01-16T15:00:05.000Z [ERROR] service=mobile-app TLS handshake failed: x509: certificate has expired or is not yet valid
+2026-01-16T15:00:05.001Z [ERROR] service=mobile-app tls: handshake failure with api.example.com
+2026-01-16T15:00:05.002Z [ERROR] service=mobile-app ssl handshake failed: server presented expired certificate
+2026-01-16T15:00:05.003Z [ERROR] service=mobile-app TLS negotiation failed: certificate verify failed (expired)
+2026-01-16T15:00:05.004Z [ERROR] service=mobile-app handshake: failed to verify server certificate — expired
+2026-01-16T15:00:10.000Z [ERROR] service=mobile-app authentication failed: secure channel could not be established
+2026-01-16T15:00:10.001Z [ERROR] service=mobile-app 401 Unauthorized: TLS failure prevented token exchange
+2026-01-16T15:00:10.002Z [ERROR] service=mobile-app invalid token: could not complete OAuth flow — TLS error
+2026-01-16T15:00:10.003Z [ERROR] service=mobile-app login failed: mTLS connection rejected due to expired server certificate

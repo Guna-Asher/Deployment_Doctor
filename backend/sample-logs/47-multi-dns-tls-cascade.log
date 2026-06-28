@@ -1,0 +1,23 @@
+
+=== 3-hop cascade: DNS_FAILURE → TLS_HANDSHAKE_FAILURE → AUTHENTICATION_FAILURE ===
+Root cause: DNS failure prevents correct hostname resolution → TLS certificate CN mismatch → auth rejected.
+
+2026-01-16T19:00:00.001Z [INFO]  service=sso-client Resolving hostname for auth.sso.internal
+2026-01-16T19:00:00.010Z [ERROR] service=sso-client no such host: auth.sso.internal — DNS lookup returned NXDOMAIN
+2026-01-16T19:00:00.011Z [ERROR] service=sso-client dns lookup failed: auth.sso.internal not found in cluster DNS
+2026-01-16T19:00:00.012Z [ERROR] service=sso-client getaddrinfo ENOTFOUND: auth.sso.internal
+2026-01-16T19:00:00.013Z [ERROR] service=sso-client Could not resolve host: auth.sso.internal
+2026-01-16T19:00:00.014Z [ERROR] service=sso-client Temporary failure in name resolution: auth.sso.internal
+2026-01-16T19:00:00.015Z [ERROR] service=sso-client failed to resolve hostname: auth.sso.internal — CoreDNS may be down
+2026-01-16T19:00:00.016Z [ERROR] service=sso-client dial tcp: lookup auth.sso.internal: no such host
+2026-01-16T19:00:00.017Z [WARN]  k8s-system CoreDNS pods not responding to health checks
+2026-01-16T19:00:00.018Z [ERROR] service=sso-client Name or service not known: auth.sso.internal
+2026-01-16T19:00:05.000Z [ERROR] service=sso-client TLS handshake failed: certificate hostname does not match IP 0.0.0.0
+2026-01-16T19:00:05.001Z [ERROR] service=sso-client tls: handshake failure — fell back to IP after DNS failure, cert CN mismatch
+2026-01-16T19:00:05.002Z [ERROR] service=sso-client ssl handshake failed: x509: certificate signed by unknown authority
+2026-01-16T19:00:05.003Z [ERROR] service=sso-client TLS negotiation failed: cannot verify server identity without valid DNS resolution
+2026-01-16T19:00:05.004Z [ERROR] service=sso-client handshake: failed to verify server certificate — hostname mismatch
+2026-01-16T19:00:10.000Z [ERROR] service=sso-client authentication failed: cannot establish secure channel to SSO provider
+2026-01-16T19:00:10.001Z [ERROR] service=sso-client 401 Unauthorized: token exchange failed — TLS error prevented authentication
+2026-01-16T19:00:10.002Z [ERROR] service=sso-client invalid token: JWT validation against JWKS endpoint failed (DNS/TLS error)
+2026-01-16T19:00:10.003Z [ERROR] service=sso-client login failed: SSO provider unreachable — DNS resolution failure

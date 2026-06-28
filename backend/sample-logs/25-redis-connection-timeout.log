@@ -1,0 +1,17 @@
+2026-01-15T21:00:00.001Z [INFO]  service=cart-svc Starting cart service, connecting to Redis cache
+2026-01-15T21:00:00.100Z [ERROR] service=cart-svc redis connection timeout: could not connect to redis:6379 within 500ms
+2026-01-15T21:00:00.101Z [ERROR] service=cart-svc Error connecting to Redis at redis-master.production.svc.cluster.local:6379
+2026-01-15T21:00:00.200Z [ERROR] service=cart-svc REDIS connection refused: connection reset by peer
+2026-01-15T21:00:00.201Z [ERROR] service=cart-svc redis: dial tcp 10.96.5.21:6379: connect: connection refused
+2026-01-15T21:00:00.300Z [ERROR] service=cart-svc Failed to connect to Redis at redis-master:6379 — retrying (attempt 1/5)
+2026-01-15T21:00:01.000Z [ERROR] service=cart-svc redis timeout: GET command timed out after 1000ms
+2026-01-15T21:00:01.001Z [ERROR] service=cart-svc redis: i/o timeout — connection to redis-master:6379
+2026-01-15T21:00:01.002Z [ERROR] service=cart-svc redis ping failed: no response from redis within 1000ms
+2026-01-15T21:00:02.000Z [ERROR] service=cart-svc redis connection lost: EOF reading from redis connection
+2026-01-15T21:00:02.001Z [ERROR] service=cart-svc could not get redis connection from pool: pool exhausted (max=50, current=50)
+2026-01-15T21:00:02.002Z [ERROR] service=cart-svc redis: connection pool exhausted — all connections in use or failed
+2026-01-15T21:00:02.003Z [ERROR] service=cart-svc connection to redis failed: retries exhausted
+2026-01-15T21:00:02.004Z [ERROR] service=cart-svc unable to reach redis: giving up after 5 attempts
+2026-01-15T21:00:02.005Z [FATAL] service=cart-svc service initialization failed: redis unavailable at startup
+2026-01-15T21:00:02.006Z [FATAL] service=cart-svc application failed to start — required cache layer not available
+2026-01-15T21:00:10.000Z [INFO]  k8s-event pod=cart-svc-abc CrashLoopBackOff

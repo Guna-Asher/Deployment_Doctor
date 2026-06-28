@@ -1,0 +1,17 @@
+2026-01-16T08:00:00.001Z [INFO]  service=notification-svc Sending HTTP request to external provider api.notify.example.com:443
+2026-01-16T08:00:00.500Z [ERROR] service=notification-svc connection timed out: api.notify.example.com:443 after 500ms
+2026-01-16T08:00:00.501Z [ERROR] service=notification-svc request timeout: POST /api/v2/send exceeded 500ms deadline
+2026-01-16T08:00:00.600Z [ERROR] service=notification-svc network timeout connecting to api.notify.example.com (attempt 1/3)
+2026-01-16T08:00:01.000Z [ERROR] service=notification-svc read timeout: no bytes received from api.notify.example.com after 1000ms
+2026-01-16T08:00:01.001Z [ERROR] service=notification-svc write timeout: failed to send request body within deadline
+2026-01-16T08:00:01.100Z [ERROR] service=notification-svc dial timeout: TCP connection to 52.14.88.201:443 timed out after 1000ms
+2026-01-16T08:00:01.101Z [ERROR] service=notification-svc i/o timeout: context deadline exceeded while reading response
+2026-01-16T08:00:01.200Z [ERROR] service=notification-svc context deadline exceeded: outbound call canceled by parent context
+2026-01-16T08:00:01.201Z [ERROR] service=notification-svc operation timed out: TCP connection timeout to external API
+2026-01-16T08:00:02.000Z [ERROR] service=notification-svc upstream timed out (504) while reading upstream response header
+2026-01-16T08:00:02.001Z [ERROR] service=notification-svc gateway timeout: upstream api.notify.example.com did not respond
+2026-01-16T08:00:02.100Z [ERROR] service=notification-svc timeout waiting for connection: pool timeout after 2000ms
+2026-01-16T08:00:02.101Z [ERROR] service=notification-svc TCP connection timeout: SYN sent, no SYN-ACK received
+2026-01-16T08:00:02.200Z [ERROR] service=notification-svc socket timeout reached: giving up after 3 retries
+2026-01-16T08:00:02.201Z [ERROR] service=notification-svc circuit breaker triggered: 5 consecutive timeouts
+2026-01-16T08:00:02.202Z [ERROR] service=notification-svc database connection failed: downstream timeout cascading to DB pool exhaustion

@@ -1,0 +1,15 @@
+2026-01-16T10:00:00.001Z [INFO]  service=checkout-svc Making HTTP call to payment-svc
+2026-01-16T10:00:00.050Z [ERROR] service=checkout-svc circuit breaker triggered: payment-svc failure rate = 75% (threshold=50%)
+2026-01-16T10:00:00.051Z [ERROR] service=checkout-svc circuit breaker open: blocking all calls to payment-svc
+2026-01-16T10:00:00.100Z [ERROR] service=checkout-svc circuit is OPEN for endpoint payment-svc — requests rejected
+2026-01-16T10:00:00.101Z [ERROR] service=checkout-svc circuit breaker is open: payment-svc circuit opened after 10 consecutive failures
+2026-01-16T10:00:00.200Z [ERROR] service=checkout-svc requests blocked by circuit breaker: payment-svc unavailable
+2026-01-16T10:00:00.201Z [ERROR] service=checkout-svc circuit opened after consecutive failures: 10/10 calls failed in last 30 seconds
+2026-01-16T10:00:00.300Z [ERROR] service=checkout-svc circuit breaker failure threshold exceeded: 75% > 50% threshold
+2026-01-16T10:00:00.301Z [WARN]  service=checkout-svc fallback triggered: returning cached response for payment availability
+2026-01-16T10:00:00.400Z [WARN]  resilience4j=checkout-svc circuit breaker 'payment-svc': state changed CLOSED -> OPEN
+2026-01-16T10:00:00.401Z [ERROR] resilience4j=checkout-svc circuit breaker tripped: payment-svc exceeded failure rate threshold
+2026-01-16T10:00:00.500Z [WARN]  service=checkout-svc half-open circuit breaker: testing one request to payment-svc
+2026-01-16T10:00:01.000Z [ERROR] service=checkout-svc circuit breaker test request failed — circuit remains OPEN
+2026-01-16T10:00:01.001Z [ERROR] service=checkout-svc 503 Service Unavailable: circuit breaker rejecting all payment requests
+2026-01-16T10:00:01.002Z [ERROR] nginx=ingress-controller 503 service temporarily unavailable — upstream circuit open

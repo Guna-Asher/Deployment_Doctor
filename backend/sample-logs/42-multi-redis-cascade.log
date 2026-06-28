@@ -1,0 +1,23 @@
+
+=== 3-hop cascade: REDIS_REPLICATION_BROKEN → REDIS_CONNECTION_TIMEOUT → CRASH_LOOP_BACKOFF ===
+Root cause: Broken Redis replication causes replica to be unreachable → client timeouts → service crash.
+
+2026-01-16T14:00:00.001Z [INFO]  redis=redis-replica-01 Connected to master, starting replication
+2026-01-16T14:00:00.010Z [ERROR] redis=redis-replica-01 replication handshake failed: master redis-master-01:6379 did not respond
+2026-01-16T14:00:00.011Z [ERROR] redis=redis-replica-01 REPLICAOF failed: connection to master timed out
+2026-01-16T14:00:00.012Z [ERROR] redis=redis-replica-01 Error condition on socket for SYNC with master
+2026-01-16T14:00:00.013Z [ERROR] redis=redis-replica-01 Partial resynchronization failed: master runid changed
+2026-01-16T14:00:00.014Z [ERROR] redis=redis-replica-01 replica lost connection to redis-master-01:6379
+2026-01-16T14:00:00.015Z [ERROR] redis=redis-replica-01 replication link down — entering standalone mode
+2026-01-16T14:00:00.016Z [ERROR] redis=redis-replica-01 redis replication error: lost sync with primary, serving stale data
+2026-01-16T14:00:00.017Z [ERROR] redis=redis-replica-01 master-replica sync failed: full resync required but master not responding
+2026-01-16T14:00:00.018Z [WARN]  redis=redis-replica-01 full resync from master: aborted
+2026-01-16T14:00:05.000Z [ERROR] service=session-svc redis connection timeout: redis-replica-01:6379 not responding
+2026-01-16T14:00:05.001Z [ERROR] service=session-svc Failed to connect to Redis at redis-replica-01:6379
+2026-01-16T14:00:05.002Z [ERROR] service=session-svc redis: i/o timeout reading from replica
+2026-01-16T14:00:05.003Z [ERROR] service=session-svc redis ping failed: replica not responding to PING
+2026-01-16T14:00:05.004Z [ERROR] service=session-svc redis: connection pool exhausted — replica unavailable
+2026-01-16T14:00:05.005Z [ERROR] service=session-svc REDIS connection refused from redis-replica-01:6379
+2026-01-16T14:00:10.000Z [FATAL] service=session-svc unable to reach redis — session service cannot function
+2026-01-16T14:00:10.001Z [INFO]  k8s-event pod=session-svc-pod Back-off restarting failed container
+2026-01-16T14:00:10.002Z [INFO]  k8s-event pod=session-svc-pod CrashLoopBackOff

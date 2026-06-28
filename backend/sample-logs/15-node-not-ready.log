@@ -1,0 +1,15 @@
+2026-01-15T11:00:00.001Z [INFO]  k8s-controller node=worker-node-03 monitoring status
+2026-01-15T11:00:30.000Z [WARN]  k8s-controller node=worker-node-03 kubelet stopped posting node status — last heartbeat 30s ago
+2026-01-15T11:00:60.000Z [WARN]  k8s-controller node=worker-node-03 node heartbeat has expired: threshold=40s, last=65s ago
+2026-01-15T11:01:00.001Z [WARN]  k8s-controller node=worker-node-03 node condition: Ready=Unknown — reason: NodeStatusUnknown
+2026-01-15T11:01:00.002Z [ERROR] k8s-event node=worker-node-03 NodeNotReady: kubelet has not checked in with the API server
+2026-01-15T11:01:30.000Z [ERROR] k8s-controller node=worker-node-03 node is not ready: taint added node.kubernetes.io/not-ready:NoExecute
+2026-01-15T11:01:30.001Z [ERROR] k8s-event node=worker-node-03 node status: NotReady — conditions: MemoryPressure=False, DiskPressure=False, PIDPressure=False, Ready=False
+2026-01-15T11:01:35.000Z [ERROR] k8s-controller node=worker-node-03 NodeCondition Ready is Unknown for longer than pod-eviction-timeout
+2026-01-15T11:01:40.000Z [ERROR] k8s-controller node=worker-node-03 node controller evicting pods from unreachable node
+2026-01-15T11:01:40.001Z [WARN]  k8s-event node=worker-node-03 taint node.kubernetes.io/not-ready applied to node
+2026-01-15T11:01:45.000Z [ERROR] k8s-event node=worker-node-03 node is unreachable: marking all pods for eviction
+2026-01-15T11:01:46.000Z [ERROR] k8s-event pod=api-svc-xyz pod evicted from node worker-node-03: The node was low on resource
+2026-01-15T11:01:47.000Z [ERROR] k8s-event pod=worker-abc pod evicted: node is unreachable, eviction triggered
+2026-01-15T11:01:50.000Z [ERROR] k8s-controller node=worker-node-03 failed to get node lease for worker-node-03
+2026-01-15T11:02:00.000Z [ERROR] k8s-event node=worker-node-03 node condition: Ready=False — DiskPressure or kubelet crash suspected

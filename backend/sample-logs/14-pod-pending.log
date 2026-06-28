@@ -1,0 +1,16 @@
+2026-01-15T10:00:00.001Z [INFO]  k8s-event namespace=production Deployment/worker-service scaled to 5 replicas
+2026-01-15T10:00:00.100Z [INFO]  k8s-event pod=worker-service-abc123 Created pod: worker-service-abc123
+2026-01-15T10:00:00.200Z [WARN]  k8s-event pod=worker-service-abc123 FailedScheduling: 0/3 nodes are available: 3 Insufficient memory
+2026-01-15T10:00:00.201Z [WARN]  k8s-scheduler pod=worker-service-abc123 0/1 nodes are available: insufficient memory (requested 4Gi, available 512Mi)
+2026-01-15T10:00:00.202Z [WARN]  k8s-event pod=worker-service-abc123 pod status: Pending
+2026-01-15T10:00:05.000Z [WARN]  k8s-scheduler pod=worker-service-abc123 no nodes available to schedule pods matching requirements
+2026-01-15T10:00:10.000Z [WARN]  k8s-event pod=worker-service-abc123 FailedScheduling: pod cannot be scheduled — no matching nodes
+2026-01-15T10:00:10.001Z [INFO]  k8s-scheduler pod=worker-service-abc123 Unschedulable: 0/3 nodes are available: 3 Insufficient cpu
+2026-01-15T10:00:15.000Z [WARN]  k8s-event pod=worker-service-abc123 pod has been in pending state for 15 seconds
+2026-01-15T10:00:20.000Z [WARN]  k8s-scheduler pod=worker-service-abc123 taints that the pod did not tolerate: node.kubernetes.io/not-ready
+2026-01-15T10:00:30.000Z [WARN]  k8s-event pod=worker-service-abc123 PodScheduled False: no suitable nodes found
+2026-01-15T10:00:30.001Z [WARN]  k8s-event pod=worker-service-abc123 did not match node selector: disktype=ssd
+2026-01-15T10:00:45.000Z [WARN]  k8s-event pod=worker-service-abc123 pod has been in pending state for 45 seconds
+2026-01-15T10:01:00.000Z [WARN]  k8s-event pod=worker-service-abc123 pod status: Pending — no change after 60 seconds
+2026-01-15T10:01:30.000Z [WARN]  k8s-event pod=worker-service-abc123 pod has been in pending state for 90 seconds
+2026-01-15T10:02:00.000Z [ERROR] k8s-event pod=worker-service-abc123 pod has been in pending state for 120 seconds — cluster may be capacity-constrained

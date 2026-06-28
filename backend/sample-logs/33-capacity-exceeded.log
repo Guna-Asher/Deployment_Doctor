@@ -1,0 +1,15 @@
+2026-01-16T05:00:00.001Z [INFO]  cluster-autoscaler Scaling node group workers from 5 to 8 nodes
+2026-01-16T05:00:10.000Z [ERROR] cluster-autoscaler InsufficientInstanceCapacity: Unable to fulfill request for resource m5.2xlarge in us-east-1a
+2026-01-16T05:00:10.001Z [ERROR] aws=ec2 InsufficientInstanceCapacity: There is no capacity available for the instance type
+2026-01-16T05:00:10.100Z [ERROR] cluster-autoscaler no capacity available for requested instance type in zone us-east-1a
+2026-01-16T05:00:10.101Z [ERROR] cluster-autoscaler capacity exceeded for node pool workers-m5-2xl in us-east-1a
+2026-01-16T05:00:10.200Z [ERROR] cluster-autoscaler scaling failed due to capacity: no available instances in us-east-1a
+2026-01-16T05:00:10.201Z [WARN]  cluster-autoscaler out of capacity: retrying in us-east-1b
+2026-01-16T05:00:20.000Z [ERROR] cluster-autoscaler no available instances in us-east-1b either — trying us-east-1c
+2026-01-16T05:00:20.001Z [ERROR] cluster-autoscaler instance capacity unavailable in all AZs for m5.2xlarge
+2026-01-16T05:00:20.100Z [ERROR] cluster-autoscaler node pool exhausted: cannot provision more nodes, cluster at capacity
+2026-01-16T05:00:20.101Z [ERROR] cluster-autoscaler cluster capacity exceeded: autoscaler cannot fulfill pending pod requests
+2026-01-16T05:00:20.200Z [ERROR] cluster-autoscaler pool capacity reached for m5.2xlarge: 50/50 max nodes running
+2026-01-16T05:00:20.201Z [ERROR] cluster-autoscaler resource pool exhausted: all instance quota used for m5 family
+2026-01-16T05:00:25.000Z [WARN]  k8s-scheduler pod=ml-training-pod1 FailedScheduling: 0/8 nodes are available — insufficient cpu
+2026-01-16T05:00:25.001Z [WARN]  k8s-event pod=ml-training-pod1 pod status: Pending — no nodes available to schedule pods

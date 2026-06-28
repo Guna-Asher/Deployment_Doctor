@@ -1,0 +1,28 @@
+
+=== 4-hop cascade: CONFIGURATION_VALIDATION_FAILURE → MISSING_CONFIGURATION → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF ===
+Root cause: Config validation errors expose missing required keys → app cannot start → crash loop.
+
+2026-01-16T17:00:00.001Z [INFO]  service=auth-svc Loading configuration from ConfigMap auth-config-v3
+2026-01-16T17:00:00.010Z [ERROR] service=auth-svc configuration validation failed: 4 errors in /etc/config/auth.yaml
+2026-01-16T17:00:00.011Z [ERROR] service=auth-svc invalid configuration value: jwt_expiry_seconds=-1 (must be positive)
+2026-01-16T17:00:00.012Z [ERROR] service=auth-svc config schema validation error: field 'oidc_issuer_url' failed URI validation
+2026-01-16T17:00:00.013Z [ERROR] service=auth-svc yaml: unmarshal error at line 8: cannot unmarshal string into int
+2026-01-16T17:00:00.014Z [ERROR] service=auth-svc required field missing in config: 'token_signing_key' not found
+2026-01-16T17:00:00.015Z [ERROR] service=auth-svc schema validation failed: config does not conform to auth-config schema v3
+2026-01-16T17:00:00.016Z [ERROR] service=auth-svc failed to validate configuration: aborting startup
+2026-01-16T17:00:00.017Z [ERROR] service=auth-svc configuration parse error: cannot parse auth.yaml — structure mismatch
+2026-01-16T17:00:00.018Z [ERROR] service=auth-svc config sanity check failed: critical fields invalid
+2026-01-16T17:00:05.000Z [ERROR] service=auth-svc missing required environment variable: AUTH_TOKEN_SIGNING_KEY
+2026-01-16T17:00:05.001Z [ERROR] service=auth-svc mandatory configuration missing: AUTH_TOKEN_SIGNING_KEY is required for JWT signing
+2026-01-16T17:00:05.002Z [ERROR] service=auth-svc configuration key not found: 'jwt_signing_secret' in Kubernetes secret auth-secrets
+2026-01-16T17:00:05.003Z [ERROR] service=auth-svc environment variable not set: OIDC_CLIENT_SECRET
+2026-01-16T17:00:05.004Z [ERROR] service=auth-svc Error loading config: required keys missing after validation
+2026-01-16T17:00:05.005Z [ERROR] service=auth-svc could not load configuration: 2 required secrets not mounted
+2026-01-16T17:00:10.000Z [FATAL] service=auth-svc application startup error: configuration invalid, cannot start
+2026-01-16T17:00:10.001Z [FATAL] service=auth-svc failed to initialize: auth subsystem requires valid JWT config
+2026-01-16T17:00:10.002Z [FATAL] service=auth-svc server failed to start — configuration validation errors prevent startup
+2026-01-16T17:00:10.003Z [FATAL] service=auth-svc bootstrap failed: 6 config errors must be resolved
+2026-01-16T17:00:10.004Z [FATAL] service=auth-svc application failed to start — invalid startup configuration
+2026-01-16T17:00:20.000Z [INFO]  k8s-event pod=auth-svc-pod Back-off restarting failed container
+2026-01-16T17:00:20.001Z [WARN]  k8s-event pod=auth-svc-pod pod restart count: 1
+2026-01-16T17:00:20.002Z [INFO]  k8s-event pod=auth-svc-pod CrashLoopBackOff

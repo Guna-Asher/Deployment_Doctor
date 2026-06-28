@@ -1,0 +1,21 @@
+2026-01-15T09:00:00.001Z [INFO]  service=payment-svc version=1.8.0 Starting service
+2026-01-15T09:00:00.020Z [INFO]  service=payment-svc Reading configuration from /etc/payment-svc/config.yaml
+2026-01-15T09:00:00.025Z [ERROR] service=payment-svc yaml: unmarshal error at line 14: expected integer, got string for field 'port'
+2026-01-15T09:00:00.026Z [ERROR] service=payment-svc configuration parse error: invalid YAML structure in config.yaml
+2026-01-15T09:00:00.027Z [ERROR] service=payment-svc invalid configuration value: 'max_connections' must be between 1 and 1000, got -1
+2026-01-15T09:00:00.028Z [ERROR] service=payment-svc config schema validation error: field 'timeout_ms' is required but not present
+2026-01-15T09:00:00.029Z [ERROR] service=payment-svc required field missing in config: 'stripe_api_key' not found in secrets mount
+2026-01-15T09:00:00.030Z [ERROR] service=payment-svc failed to validate configuration: 3 validation errors found
+2026-01-15T09:00:00.031Z [ERROR] service=payment-svc configuration validation failed — refusing to start with invalid config
+2026-01-15T09:00:00.032Z [FATAL] service=payment-svc invalid config format: aborting
+2026-01-15T09:00:00.033Z [FATAL] service=payment-svc schema validation failed: config does not match expected schema v2.1
+2026-01-15T09:00:00.034Z [FATAL] service=payment-svc config sanity check failed: see errors above
+2026-01-15T09:00:00.035Z [FATAL] service=payment-svc configuration error: invalid startup config prevents service start
+2026-01-15T09:00:00.036Z [FATAL] service=payment-svc env var has invalid value: DATABASE_POOL_SIZE=-1 (must be positive)
+2026-01-15T09:00:00.037Z [INFO]  service=payment-svc Exiting with code 78 (NOINPUT)
+2026-01-15T09:00:10.000Z [INFO]  k8s-event pod=payment-svc-5f9b7c-abc12 Back-off restarting failed container
+2026-01-15T09:00:10.001Z [WARN]  k8s-event pod=payment-svc-5f9b7c-abc12 pod restart count: 1
+2026-01-15T09:00:20.100Z [INFO]  service=payment-svc Starting service (retry 2)
+2026-01-15T09:00:20.110Z [ERROR] service=payment-svc configuration validation failed — same errors as previous attempt
+2026-01-15T09:00:20.111Z [ERROR] service=payment-svc json schema validation error: property 'webhook_secret' failed pattern validation
+2026-01-15T09:00:20.112Z [INFO]  k8s-event pod=payment-svc-5f9b7c-abc12 CrashLoopBackOff

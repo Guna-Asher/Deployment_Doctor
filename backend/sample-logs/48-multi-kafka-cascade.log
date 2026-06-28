@@ -1,0 +1,25 @@
+
+=== 3-hop cascade: QUEUE_FULL → MESSAGE_BROKER_DOWN → CONSUMER_LAG ===
+Root cause: Queue fills up (consumers offline) → disk pressure causes broker crash → consumers cannot reconnect.
+
+2026-01-16T20:00:00.001Z [INFO]  broker=kafka-broker-0 topic=transactions-v3 Monitoring partition sizes
+2026-01-16T20:00:00.010Z [WARN]  broker=kafka-broker-0 disk quota reached for topic: transactions-v3 at 98%
+2026-01-16T20:00:00.011Z [ERROR] broker=kafka-broker-0 queue is full: transactions-v3 partition 0 hit retention limit
+2026-01-16T20:00:00.012Z [ERROR] broker=kafka-broker-0 log.retention.bytes exceeded for topic transactions-v3
+2026-01-16T20:00:00.013Z [ERROR] broker=kafka-broker-0 topic is full: new messages rejected for transactions-v3
+2026-01-16T20:00:00.014Z [ERROR] service=tx-producer producer queue full: outgoing buffer at 100% capacity
+2026-01-16T20:00:00.015Z [ERROR] service=tx-producer message queue capacity exceeded: dropping new events
+2026-01-16T20:00:00.016Z [ERROR] service=tx-producer buffer is full: producer back pressure activated
+2026-01-16T20:00:00.017Z [ERROR] broker=kafka-broker-0 queue overflow: partition log segments filling /data/kafka
+2026-01-16T20:00:00.018Z [ERROR] broker=kafka-broker-0 queue depth exceeded: 5.2M messages piled up
+2026-01-16T20:00:05.000Z [ERROR] broker=kafka-broker-0 No space left on device: cannot write new log segments
+2026-01-16T20:00:05.001Z [FATAL] broker=kafka-broker-0 broker is down: unrecoverable disk I/O error
+2026-01-16T20:00:05.002Z [FATAL] broker=kafka-broker-0 LEADER_NOT_AVAILABLE: broker-0 crashed
+2026-01-16T20:00:05.003Z [ERROR] service=tx-producer broker unavailable: kafka-broker-0 not reachable
+2026-01-16T20:00:05.004Z [ERROR] service=tx-producer could not connect to any broker in list
+2026-01-16T20:00:05.005Z [ERROR] service=tx-producer message broker unreachable: all brokers down
+2026-01-16T20:00:05.006Z [ERROR] service=tx-producer failed to connect to broker: no controller available
+2026-01-16T20:00:10.000Z [ERROR] consumer-group=tx-processor consumer lag: 5200000 — broker down, no new messages consumed
+2026-01-16T20:00:10.001Z [ERROR] consumer-group=tx-processor high consumer lag detected: 5.2M messages unprocessed
+2026-01-16T20:00:10.002Z [ERROR] consumer-group=tx-processor consumer group lag: cannot commit offsets — broker unavailable
+2026-01-16T20:00:10.003Z [ERROR] consumer-group=tx-processor lag is growing: broker outage halted all consumption

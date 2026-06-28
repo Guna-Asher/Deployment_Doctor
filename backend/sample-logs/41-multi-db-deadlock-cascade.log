@@ -1,0 +1,23 @@
+
+=== 4-hop cascade: DB_SLOW_QUERY → DB_DEADLOCK → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF ===
+Root cause: Slow queries without indexes cause lock contention → deadlocks → connection exhaustion → crash loop.
+
+2026-01-16T13:00:00.001Z [WARN]  db=postgres-primary slow query: 12.3s on SELECT * FROM user_events WHERE user_id=? (no index)
+2026-01-16T13:00:00.002Z [WARN]  db=postgres-primary full table scan detected: user_events (8.2M rows) — missing index on user_id
+2026-01-16T13:00:00.003Z [WARN]  db=postgres-primary long running query detected: pid=4521 duration=12s
+2026-01-16T13:00:00.004Z [ERROR] db=postgres-primary query execution time exceeded: 12000ms for query on table 'user_events'
+2026-01-16T13:00:00.005Z [ERROR] db=postgres-primary canceling statement due to statement timeout: pid=4521
+2026-01-16T13:00:00.006Z [ERROR] db=postgres-primary max_execution_time exceeded: aborting slow query
+2026-01-16T13:00:00.007Z [WARN]  db=postgres-primary slow log: query exceeded threshold of 5000ms
+2026-01-16T13:00:05.000Z [ERROR] db=postgres-primary deadlock detected: processes 4521 and 4522 mutually blocked
+2026-01-16T13:00:05.001Z [ERROR] db=postgres-primary deadlock found when trying to get lock: Process 4521 waits for ShareLock
+2026-01-16T13:00:05.002Z [ERROR] db=postgres-primary lock wait timeout exceeded: 30000ms for transaction 4522
+2026-01-16T13:00:05.003Z [ERROR] db=postgres-primary transaction deadlock — aborting victim transaction 4522
+2026-01-16T13:00:05.004Z [ERROR] db=postgres-primary transaction rolled back due to deadlock: 3 transactions rolled back in last 5s
+2026-01-16T13:00:10.000Z [ERROR] service=analytics-api database connection failed: connection pool saturated by deadlock retries
+2026-01-16T13:00:10.001Z [ERROR] service=analytics-api could not connect to server: too many connections (max=100)
+2026-01-16T13:00:10.002Z [ERROR] service=analytics-api connection pool exhausted: all 100 connections stuck in deadlock retry
+2026-01-16T13:00:10.003Z [ERROR] service=analytics-api ECONNREFUSED: database rejecting new connections
+2026-01-16T13:00:15.000Z [FATAL] service=analytics-api unable to connect to database: service terminating
+2026-01-16T13:00:15.001Z [INFO]  k8s-event pod=analytics-api-pod Back-off restarting failed container
+2026-01-16T13:00:15.002Z [INFO]  k8s-event pod=analytics-api-pod CrashLoopBackOff

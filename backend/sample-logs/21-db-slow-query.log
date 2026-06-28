@@ -1,0 +1,17 @@
+2026-01-15T17:00:00.001Z [INFO]  db=mysql-primary slow query log enabled: long_query_time=2.000000
+2026-01-15T17:00:01.000Z [WARN]  db=mysql-primary slow query: Query_time=8.321 Lock_time=0.002 Rows_examined=2483901 SELECT * FROM analytics_events WHERE created_at > '2026-01-01' ORDER BY user_id
+2026-01-15T17:00:01.001Z [WARN]  db=mysql-primary slow log: query exceeded threshold of 5000ms — query timeout imminent
+2026-01-15T17:00:05.000Z [WARN]  db=mysql-primary long running query detected: pid=32451 duration=12s state=Sending data
+2026-01-15T17:00:05.001Z [ERROR] db=mysql-primary query execution time exceeded: 12000ms for query on table 'analytics_events'
+2026-01-15T17:00:05.002Z [ERROR] db=mysql-primary max_execution_time exceeded for SELECT query — aborting
+2026-01-15T17:00:05.003Z [ERROR] db=mysql-primary full table scan detected on analytics_events (2.4M rows) — no index used
+2026-01-15T17:00:05.004Z [WARN]  db=mysql-primary missing index causing full scan: column 'user_id' has no index
+2026-01-15T17:00:10.000Z [ERROR] service=reporting-svc query timeout: SELECT statement exceeded 10000ms statement timeout
+2026-01-15T17:00:10.001Z [ERROR] service=reporting-svc statement timeout: query killed after 10000ms
+2026-01-15T17:00:10.002Z [ERROR] db=mysql-primary canceling statement due to statement timeout: pid=32451
+2026-01-15T17:00:10.003Z [ERROR] db=mysql-primary query took too long: 15.3 seconds on table analytics_events
+2026-01-15T17:00:15.000Z [WARN]  db=mysql-primary execution plan warning: full scan across 2M+ rows for aggregation query
+2026-01-15T17:00:15.001Z [ERROR] db=mysql-primary query duration exceeded threshold: 15s > max_allowed 5s
+2026-01-15T17:00:20.000Z [ERROR] db=mysql-primary lock wait timeout exceeded: another long-running query holding row locks
+2026-01-15T17:00:20.001Z [ERROR] db=mysql-primary deadlock found when trying to get lock: caused by concurrent analytical queries
+2026-01-15T17:00:25.000Z [ERROR] service=reporting-svc database connection failed: query timeout cascade causing connection pool exhaustion

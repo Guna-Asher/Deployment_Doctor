@@ -1,0 +1,18 @@
+2026-01-15T16:00:00.001Z [INFO]  db=postgres-primary transaction=tx-5523 BEGIN
+2026-01-15T16:00:00.002Z [INFO]  db=postgres-primary transaction=tx-5524 BEGIN
+2026-01-15T16:00:00.100Z [INFO]  db=postgres-primary transaction=tx-5523 UPDATE orders SET status='processing' WHERE id=1001
+2026-01-15T16:00:00.101Z [INFO]  db=postgres-primary transaction=tx-5524 UPDATE inventory SET quantity=quantity-1 WHERE product_id=501
+2026-01-15T16:00:00.200Z [INFO]  db=postgres-primary transaction=tx-5523 UPDATE inventory SET quantity=quantity-1 WHERE product_id=501 (waiting)
+2026-01-15T16:00:00.201Z [INFO]  db=postgres-primary transaction=tx-5524 UPDATE orders SET status='processing' WHERE id=1001 (waiting)
+2026-01-15T16:00:01.000Z [ERROR] db=postgres-primary ERROR: deadlock detected — tx-5523 waiting for tx-5524, tx-5524 waiting for tx-5523
+2026-01-15T16:00:01.001Z [ERROR] db=postgres-primary deadlock found when trying to get lock: Process 5523 waits for ShareLock on transaction 5524
+2026-01-15T16:00:01.002Z [ERROR] db=postgres-primary transaction rolled back due to deadlock: tx-5523
+2026-01-15T16:00:01.003Z [ERROR] service=order-api ERROR: deadlock detected in order processing transaction
+2026-01-15T16:00:01.004Z [WARN]  db=postgres-primary lock wait timeout exceeded for transaction tx-5525 (30000ms)
+2026-01-15T16:00:01.005Z [WARN]  db=postgres-primary transaction deadlock — victim transaction selected and aborted
+2026-01-15T16:00:01.006Z [ERROR] db=postgres-primary detected deadlock while waiting for lock on relation 'orders'
+2026-01-15T16:00:01.007Z [ERROR] db=postgres-primary row level lock timeout: transaction tx-5526 aborted after 10000ms
+2026-01-15T16:00:01.008Z [ERROR] db=postgres-primary could not serialize access due to concurrent update on row (id=1001)
+2026-01-15T16:00:01.009Z [ERROR] db=postgres-primary lock conflict detected: transactions competing on same row set
+2026-01-15T16:00:10.000Z [ERROR] service=order-api 5 deadlock errors in last 10 seconds — circuit breaker opening
+2026-01-15T16:00:10.001Z [ERROR] service=order-api database connection failed: too many consecutive transaction failures

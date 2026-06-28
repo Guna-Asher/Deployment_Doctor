@@ -1,0 +1,14 @@
+2026-01-16T01:00:00.001Z [INFO]  broker=kafka-broker-0 topic=clickstream-events partition=0 Starting log cleaner
+2026-01-16T01:00:00.100Z [WARN]  broker=kafka-broker-0 topic=clickstream-events disk quota reached for topic: 95% of retention.bytes used
+2026-01-16T01:00:00.101Z [WARN]  broker=kafka-broker-0 log.retention.bytes exceeded for topic clickstream-events: limit=107374182400 current=107839127552
+2026-01-16T01:00:00.200Z [ERROR] broker=kafka-broker-0 queue is full: producer buffer overflow for clickstream-events
+2026-01-16T01:00:00.201Z [ERROR] broker=kafka-broker-0 topic is full: log segment full, cannot accept new messages
+2026-01-16T01:00:00.300Z [ERROR] service=click-producer producer queue full: outgoing buffer at capacity (max=32MB)
+2026-01-16T01:00:00.301Z [ERROR] service=click-producer message queue capacity exceeded: dropping messages
+2026-01-16T01:00:00.400Z [ERROR] service=click-producer buffer is full: 32768 messages waiting, new messages rejected
+2026-01-16T01:00:00.401Z [ERROR] service=click-producer producer back pressure: rate limiter triggered at 50000 msg/s
+2026-01-16T01:00:00.500Z [ERROR] broker=kafka-broker-0 queue overflow: disk I/O cannot keep up with incoming message rate
+2026-01-16T01:00:00.501Z [ERROR] broker=kafka-broker-0 topic retention limit exceeded: old segments not yet cleaned up
+2026-01-16T01:00:01.000Z [ERROR] broker=kafka-broker-0 queue depth exceeded: 2.1M messages pending across all partitions
+2026-01-16T01:00:01.001Z [WARN]  consumer-group=click-processor consumer lag: 2100000 — lag is growing fast
+2026-01-16T01:00:01.002Z [ERROR] consumer-group=click-processor consumer is behind: broker queue overflow causing rebalance

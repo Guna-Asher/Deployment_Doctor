@@ -1,0 +1,16 @@
+2026-01-16T03:00:00.001Z [INFO]  service=file-processor Starting up, attempting to access artifact storage
+2026-01-16T03:00:00.100Z [ERROR] service=file-processor Failed to access object storage: s3://prod-artifacts/config/app.properties
+2026-01-16T03:00:00.101Z [ERROR] service=file-processor S3 error: GetObject — bucket not found: s3://prod-artifacts (region mismatch?)
+2026-01-16T03:00:00.200Z [ERROR] service=file-processor GCS error: 403 Forbidden reading gs://prod-artifacts/config/app.properties
+2026-01-16T03:00:00.201Z [ERROR] service=file-processor storage bucket access denied: service account missing storage.objectViewer role
+2026-01-16T03:00:00.300Z [ERROR] service=file-processor GetObject failed: NoSuchBucket — bucket prod-artifacts-v2 does not exist
+2026-01-16T03:00:00.301Z [ERROR] service=file-processor object not found: key config/app.properties does not exist in bucket
+2026-01-16T03:00:00.400Z [ERROR] service=file-processor blob storage error: connection reset while reading object (timeout after 30s)
+2026-01-16T03:00:00.401Z [ERROR] service=file-processor object storage timeout: bucket operation exceeded 30000ms
+2026-01-16T03:00:00.500Z [ERROR] service=file-processor cannot read from bucket: prod-artifacts/bootstrap — AccessDenied
+2026-01-16T03:00:00.501Z [ERROR] service=file-processor PutObject failed: storage account error — quota exceeded on bucket
+2026-01-16T03:00:00.600Z [ERROR] service=file-processor object storage connection error: endpoint returned 503
+2026-01-16T03:00:00.601Z [ERROR] service=file-processor storage account error: service principal has expired credentials
+2026-01-16T03:00:01.000Z [FATAL] service=file-processor Failed to load application: startup config not readable from object storage
+2026-01-16T03:00:01.001Z [FATAL] service=file-processor application startup error: required bootstrap file missing from storage
+2026-01-16T03:00:10.000Z [INFO]  k8s-event pod=file-processor-001 CrashLoopBackOff

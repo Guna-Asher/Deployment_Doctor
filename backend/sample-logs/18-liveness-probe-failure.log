@@ -1,0 +1,15 @@
+2026-01-15T14:00:00.001Z [INFO]  service=user-api pod=user-api-9f7c6d-mno34 Service started, running liveness checks
+2026-01-15T14:00:30.000Z [WARN]  k8s-kubelet pod=user-api-9f7c6d-mno34 Liveness probe failed: HTTP probe failed with statuscode: 503
+2026-01-15T14:00:35.000Z [WARN]  k8s-kubelet pod=user-api-9f7c6d-mno34 liveness: HTTP probe failed for endpoint /healthz — returned 503
+2026-01-15T14:00:40.000Z [WARN]  k8s-kubelet pod=user-api-9f7c6d-mno34 liveness probe returning: status=FAIL reason=thread-pool-full
+2026-01-15T14:00:45.000Z [WARN]  k8s-kubelet pod=user-api-9f7c6d-mno34 liveness probe failing: consecutive failures=2
+2026-01-15T14:00:50.000Z [ERROR] k8s-kubelet pod=user-api-9f7c6d-mno34 container failed liveness probe: failure count=3
+2026-01-15T14:00:50.001Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 Unhealthy: Liveness probe failed: HTTP probe failed with statuscode: 503
+2026-01-15T14:00:50.002Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 unhealthy after liveness probe — container will be killed
+2026-01-15T14:00:50.003Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 exceeded liveness probe threshold: killing container
+2026-01-15T14:00:50.004Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 Killing container with id docker://user-api — liveness probe threshold exceeded
+2026-01-15T14:00:50.005Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 Container killed by liveness check: failureThreshold=3 reached
+2026-01-15T14:00:51.000Z [ERROR] k8s-event pod=user-api-9f7c6d-mno34 restarting container due to liveness probe failure
+2026-01-15T14:00:51.001Z [WARN]  k8s-event pod=user-api-9f7c6d-mno34 liveness: exec probe failed: exit code 1
+2026-01-15T14:01:00.000Z [INFO]  k8s-event pod=user-api-9f7c6d-mno34 Back-off restarting failed container
+2026-01-15T14:01:00.001Z [WARN]  k8s-event pod=user-api-9f7c6d-mno34 pod restart count: 3

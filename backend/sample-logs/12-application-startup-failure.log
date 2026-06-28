@@ -1,0 +1,25 @@
+2026-01-15T08:00:00.001Z [INFO]  service=api-gateway version=2.3.1 Starting application bootstrap sequence
+2026-01-15T08:00:00.042Z [INFO]  service=api-gateway Loading configuration from /etc/config/app.yaml
+2026-01-15T08:00:00.089Z [INFO]  service=api-gateway Configuration loaded, initializing subsystems
+2026-01-15T08:00:00.120Z [INFO]  service=api-gateway Initializing database connection pool
+2026-01-15T08:00:00.450Z [ERROR] service=api-gateway failed to initialize database subsystem: connection timeout after 300ms
+2026-01-15T08:00:00.451Z [ERROR] service=api-gateway application startup error: required subsystem 'database' did not become ready
+2026-01-15T08:00:00.452Z [FATAL] service=api-gateway fatal error during initialization: aborting startup
+2026-01-15T08:00:00.453Z [FATAL] service=api-gateway application failed to start — exiting with code 1
+2026-01-15T08:00:00.453Z [INFO]  service=api-gateway Initiating shutdown hooks
+2026-01-15T08:00:00.600Z [ERROR] k8s-event pod=api-gateway-7d9b8f-xk2p9 application startup error reported by container
+2026-01-15T08:00:00.601Z [INFO]  k8s-event pod=api-gateway-7d9b8f-xk2p9 container exited with code 1 at 08:00:00
+2026-01-15T08:00:10.000Z [INFO]  k8s-event pod=api-gateway-7d9b8f-xk2p9 Back-off restarting failed container
+2026-01-15T08:00:10.001Z [WARN]  k8s-event pod=api-gateway-7d9b8f-xk2p9 pod restart count: 1
+2026-01-15T08:00:20.000Z [INFO]  service=api-gateway Starting application bootstrap sequence (attempt 2)
+2026-01-15T08:00:20.200Z [ERROR] service=api-gateway failed to initialize: database not reachable at startup
+2026-01-15T08:00:20.201Z [ERROR] service=api-gateway server failed to start — all dependency checks failed
+2026-01-15T08:00:20.202Z [ERROR] service=api-gateway service initialization failed: exiting
+2026-01-15T08:00:20.203Z [FATAL] service=api-gateway bootstrap failed after 3 retries: giving up
+2026-01-15T08:00:20.204Z [FATAL] service=api-gateway unable to start application: check logs above for root cause
+2026-01-15T08:00:20.205Z [FATAL] service=api-gateway process exited during startup with non-zero code
+2026-01-15T08:00:30.000Z [INFO]  k8s-event pod=api-gateway-7d9b8f-xk2p9 Back-off restarting failed container
+2026-01-15T08:00:30.001Z [WARN]  k8s-event pod=api-gateway-7d9b8f-xk2p9 pod restart count: 2
+2026-01-15T08:00:40.100Z [ERROR] service=api-gateway application did not start successfully after 2 attempts
+2026-01-15T08:00:40.101Z [ERROR] service=api-gateway main process crashed on boot — check dependency health
+2026-01-15T08:00:40.102Z [INFO]  k8s-event pod=api-gateway-7d9b8f-xk2p9 CrashLoopBackOff

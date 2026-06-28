@@ -1,0 +1,16 @@
+2026-01-15T22:00:00.001Z [INFO]  redis=redis-replica-01 Connected to redis-master-01, starting replication
+2026-01-15T22:00:00.010Z [INFO]  redis=redis-replica-01 REPLICAOF redis-master-01 6379 OK
+2026-01-15T22:00:30.000Z [WARN]  redis=redis-replica-01 replication handshake failed: timeout waiting for PING response from master
+2026-01-15T22:00:30.001Z [ERROR] redis=redis-replica-01 REPLICAOF failed: master did not respond to handshake
+2026-01-15T22:00:30.002Z [ERROR] redis=redis-replica-01 Error condition on socket for SYNC with master
+2026-01-15T22:00:35.000Z [ERROR] redis=redis-replica-01 replica lost connection to master redis-master-01:6379
+2026-01-15T22:00:35.001Z [ERROR] redis=redis-replica-01 replication link down — reconnecting
+2026-01-15T22:00:40.000Z [ERROR] redis=redis-replica-01 Partial resynchronization failed: master did not accept PSYNC request
+2026-01-15T22:00:40.001Z [ERROR] redis=redis-replica-01 redis replication error: FULLRESYNC required but master busy
+2026-01-15T22:00:45.000Z [ERROR] redis=redis-replica-01 master-replica sync failed: full resync aborted
+2026-01-15T22:00:45.001Z [ERROR] redis=redis-replica-01 replica disconnected: master closed connection during RDB transfer
+2026-01-15T22:00:50.000Z [ERROR] redis=redis-replica-01 replication: unable to sync with master after 3 attempts
+2026-01-15T22:00:50.001Z [ERROR] redis=redis-replica-01 redis replica out of sync: will retry in 5 seconds
+2026-01-15T22:00:55.000Z [ERROR] redis=redis-replica-01 full resync from master: failed — connection dropped again
+2026-01-15T22:01:00.000Z [ERROR] service=app redis connection timeout: replica returning stale or no data
+2026-01-15T22:01:00.001Z [ERROR] service=app Failed to connect to Redis: replica is unreachable

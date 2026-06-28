@@ -1,0 +1,15 @@
+2026-01-16T07:00:00.001Z [INFO]  service=grpc-client Initiating mTLS connection to auth-service.production.svc:8443
+2026-01-16T07:00:00.050Z [ERROR] service=grpc-client TLS handshake failed: x509: certificate signed by unknown authority
+2026-01-16T07:00:00.051Z [ERROR] service=grpc-client tls: handshake failure — server certificate chain not trusted
+2026-01-16T07:00:00.100Z [ERROR] service=grpc-client ssl handshake failed: unable to verify certificate chain from auth-service
+2026-01-16T07:00:00.101Z [ERROR] service=grpc-client SSL handshake error: peer certificate CN=auth-service.internal does not match hostname
+2026-01-16T07:00:00.200Z [ERROR] service=grpc-client certificate verify failed: unable to verify certificate from auth-service.production.svc
+2026-01-16T07:00:00.201Z [ERROR] service=grpc-client unable to verify certificate: custom CA not in trust store
+2026-01-16T07:00:00.300Z [ERROR] service=grpc-client tls: no supported versions satisfying TLS min version requirement (server offers TLS1.1 only)
+2026-01-16T07:00:00.301Z [ERROR] service=grpc-client TLS negotiation failed: client requires TLS 1.2+, server offered TLS 1.0
+2026-01-16T07:00:00.400Z [ERROR] service=grpc-client remote error: tls: certificate required (mTLS client cert missing)
+2026-01-16T07:00:00.401Z [ERROR] service=grpc-client ssl_error_handshake_failure_alert: remote peer rejected TLS handshake
+2026-01-16T07:00:00.500Z [ERROR] service=grpc-client handshake: failed to verify server certificate — untrusted issuer
+2026-01-16T07:00:00.501Z [ERROR] service=grpc-client SSL peer certificate or SSH remote key was not OK — aborting connection
+2026-01-16T07:00:01.000Z [ERROR] service=grpc-client authentication failed: TLS handshake failure prevents secure channel setup
+2026-01-16T07:00:01.001Z [ERROR] service=grpc-client database connection failed: TLS negotiation failed to secure channel

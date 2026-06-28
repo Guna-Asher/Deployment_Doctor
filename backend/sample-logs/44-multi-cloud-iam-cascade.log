@@ -1,0 +1,26 @@
+
+=== 4-hop cascade: CLOUD_IAM_DENIED → OBJECT_STORAGE_ACCESS_FAILURE → APPLICATION_STARTUP_FAILURE → CRASH_LOOP_BACKOFF ===
+Root cause: Missing IAM permissions deny object storage access → bootstrap config unreadable → app fails to start → crash loop.
+
+2026-01-16T16:00:00.001Z [INFO]  service=config-loader Fetching bootstrap configuration from object storage
+2026-01-16T16:00:00.010Z [ERROR] aws=iam AccessDenied: User is not authorized to perform: s3:GetObject on s3://config-bucket/bootstrap.yaml
+2026-01-16T16:00:00.011Z [ERROR] aws=iam is not authorized to perform: s3:GetObject — IAM role missing s3:GetObject permission
+2026-01-16T16:00:00.012Z [ERROR] service=config-loader IAM policy denied: GetObject rejected for s3://config-bucket/bootstrap.yaml
+2026-01-16T16:00:00.013Z [ERROR] service=config-loader workload identity failed: IRSA role arn:aws:iam::123456789:role/app-role lacks S3 permissions
+2026-01-16T16:00:00.014Z [ERROR] service=config-loader service account lacks permissions: eks.amazonaws.com/role-arn annotation missing
+2026-01-16T16:00:00.015Z [ERROR] service=config-loader authorization failed for resource: s3://config-bucket — AccessDenied
+2026-01-16T16:00:00.016Z [ERROR] service=config-loader Forbidden: 403 — s3 API returned access denied
+2026-01-16T16:00:00.017Z [ERROR] service=config-loader not authorized to perform this action: s3:GetObject
+2026-01-16T16:00:05.000Z [ERROR] service=config-loader Failed to access object storage: GetObject failed on s3://config-bucket/bootstrap.yaml
+2026-01-16T16:00:05.001Z [ERROR] service=config-loader S3 error: GetObject — AccessDenied from IAM policy
+2026-01-16T16:00:05.002Z [ERROR] service=config-loader storage bucket access denied: cannot read bootstrap config
+2026-01-16T16:00:05.003Z [ERROR] service=config-loader GetObject failed: no read permission on config-bucket
+2026-01-16T16:00:05.004Z [ERROR] service=config-loader object storage connection error: ACL denial treated as connection error
+2026-01-16T16:00:10.000Z [FATAL] service=config-loader application startup error: bootstrap configuration unavailable
+2026-01-16T16:00:10.001Z [FATAL] service=config-loader failed to initialize: cannot load application config from storage
+2026-01-16T16:00:10.002Z [FATAL] service=config-loader fatal error during initialization: storage access blocked by IAM
+2026-01-16T16:00:10.003Z [FATAL] service=config-loader application failed to start — required storage unavailable
+2026-01-16T16:00:10.004Z [FATAL] service=config-loader service initialization failed: aborting
+2026-01-16T16:00:20.000Z [INFO]  k8s-event pod=config-loader-pod Back-off restarting failed container
+2026-01-16T16:00:20.001Z [WARN]  k8s-event pod=config-loader-pod pod restart count: 1
+2026-01-16T16:00:20.002Z [INFO]  k8s-event pod=config-loader-pod CrashLoopBackOff

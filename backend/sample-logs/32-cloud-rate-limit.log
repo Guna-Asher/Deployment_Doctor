@@ -1,0 +1,16 @@
+2026-01-16T04:00:00.001Z [INFO]  service=ml-inference Sending batch inference requests to cloud AI API
+2026-01-16T04:00:00.100Z [ERROR] service=ml-inference 429 Too Many Requests: API rate limit exceeded — retry after 60s
+2026-01-16T04:00:00.101Z [ERROR] service=ml-inference API rate limit hit: 1000 requests/minute exceeded
+2026-01-16T04:00:00.200Z [ERROR] aws=bedrock ThrottlingException: Rate exceeded for model invocation
+2026-01-16T04:00:00.201Z [ERROR] service=ml-inference ThrottlingException: too many requests to inference endpoint
+2026-01-16T04:00:00.300Z [ERROR] service=ml-inference request throttled: HTTP 429 from AI API — backing off
+2026-01-16T04:00:00.301Z [ERROR] service=ml-inference rate limit exceeded: quota limit reached for API calls per minute
+2026-01-16T04:00:00.400Z [ERROR] service=ml-inference TooManyRequests: concurrent request limit breached (max=50)
+2026-01-16T04:00:00.401Z [ERROR] service=ml-inference throttling exception: model serving capacity exhausted
+2026-01-16T04:00:00.500Z [ERROR] service=ml-inference request rate limit hit: 429 error on POST /v1/inference
+2026-01-16T04:00:00.501Z [ERROR] service=ml-inference API calls exceeded hourly quota — waiting for quota reset
+2026-01-16T04:00:01.000Z [ERROR] service=ml-inference service throttling detected: circuit breaker entering half-open state
+2026-01-16T04:00:01.001Z [WARN]  service=ml-inference RetryableException: rate exceeded — sleeping 5s before retry
+2026-01-16T04:00:01.002Z [ERROR] service=ml-inference quota limit reached for API — all requests blocked for 60 seconds
+2026-01-16T04:00:06.000Z [ERROR] service=ml-inference circuit breaker open: consecutive 429 errors exceeded threshold
+2026-01-16T04:00:06.001Z [WARN]  service=ml-inference Back-off restarting failed container: rate limit causing service termination

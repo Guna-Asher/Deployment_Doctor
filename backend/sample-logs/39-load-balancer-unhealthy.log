@@ -1,0 +1,16 @@
+2026-01-16T11:00:00.001Z [INFO]  lb=alb-prod-01 Health checking target group tg-user-api (interval=30s)
+2026-01-16T11:00:00.050Z [WARN]  lb=alb-prod-01 health check failed: target 10.0.1.52:8080 returned 503
+2026-01-16T11:00:00.100Z [WARN]  lb=alb-prod-01 target health check failing: i-0a1b2c3d4e5f6789 (10.0.1.52:8080) health=unhealthy
+2026-01-16T11:00:00.101Z [ERROR] lb=alb-prod-01 unhealthy target: 10.0.1.52:8080 — removing from rotation
+2026-01-16T11:00:00.200Z [ERROR] lb=alb-prod-01 host removed from pool: 10.0.1.52 failed 3 consecutive health checks
+2026-01-16T11:00:00.201Z [ERROR] lb=alb-prod-01 target is unhealthy: 10.0.1.53:8080 also failed health check
+2026-01-16T11:00:00.300Z [ERROR] lb=alb-prod-01 removing unhealthy host 10.0.1.53 from target group
+2026-01-16T11:00:00.301Z [ERROR] lb=alb-prod-01 health probe failed: GET /health returned 503 on 10.0.1.54:8080
+2026-01-16T11:00:00.400Z [WARN]  lb=alb-prod-01 backend unhealthy: 2 of 3 targets removed from rotation
+2026-01-16T11:00:00.401Z [ERROR] lb=alb-prod-01 load balancer health check: all 3 targets responding with 503
+2026-01-16T11:00:00.500Z [CRITICAL] lb=alb-prod-01 all backend instances unhealthy: no targets available in tg-user-api
+2026-01-16T11:00:00.501Z [ERROR] lb=alb-prod-01 load balancer backend down: zero healthy instances in target group
+2026-01-16T11:00:00.600Z [ERROR] lb=alb-prod-01 health status: unhealthy for all targets in tg-user-api
+2026-01-16T11:00:00.601Z [ERROR] lb=alb-prod-01 listener health check failure: HTTP 503 on port 443 listener
+2026-01-16T11:00:01.000Z [ERROR] nginx=ingress-controller 503 Service Unavailable: no healthy upstream servers available
+2026-01-16T11:00:01.001Z [ERROR] nginx=ingress-controller 502 Bad Gateway: load balancer backend down

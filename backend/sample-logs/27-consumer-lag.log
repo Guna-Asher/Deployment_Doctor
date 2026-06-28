@@ -1,0 +1,13 @@
+2026-01-15T23:00:00.001Z [INFO]  consumer-group=order-processor topic=orders-v2 partitions=12 Starting consumer group
+2026-01-15T23:00:01.000Z [WARN]  consumer-group=order-processor consumer lag: partition=0 offset_lag=1250
+2026-01-15T23:00:01.001Z [WARN]  consumer-group=order-processor consumer lag: partition=1 offset_lag=1843
+2026-01-15T23:00:05.000Z [WARN]  consumer-group=order-processor consumer group lag: total_lag=15230 messages pending
+2026-01-15T23:00:10.000Z [WARN]  consumer-group=order-processor high consumer lag detected: total_lag=18750 (threshold=5000)
+2026-01-15T23:00:15.000Z [ERROR] consumer-group=order-processor lag is growing: +3500 messages in last 10 seconds
+2026-01-15T23:00:20.000Z [ERROR] consumer-group=order-processor consumer is behind: 22,000 unprocessed messages in queue
+2026-01-15T23:00:25.000Z [ERROR] consumer-group=order-processor topic partition lag: partition=3 lag=5200 (critical)
+2026-01-15T23:00:30.000Z [ERROR] consumer-group=order-processor consumer falling behind: processing rate=500/s, production rate=1800/s
+2026-01-15T23:00:35.000Z [ERROR] consumer-group=order-processor consumer offset lagging: last committed offset=10045, high watermark=32045
+2026-01-15T23:00:40.000Z [CRITICAL] consumer-group=order-processor message backlog growing: estimated 45 minutes to drain at current rate
+2026-01-15T23:00:45.000Z [ERROR] consumer-group=order-processor offset lag: 25000 messages behind high watermark
+2026-01-15T23:00:50.000Z [CRITICAL] consumer-group=order-processor unprocessed messages: 28,000+ queued — SLA breach imminent

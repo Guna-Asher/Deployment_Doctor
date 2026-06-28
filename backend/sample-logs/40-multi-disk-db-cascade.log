@@ -1,0 +1,22 @@
+
+=== Multi-hop cascade: DISK_FULL → DB_CONNECTION_FAILURE → CRASH_LOOP_BACKOFF ===
+Root cause: Disk full on database volume causes connection failures, triggers CrashLoopBackOff.
+
+2026-01-16T12:00:00.001Z [INFO]  db=postgres-primary Routine checkpoint started
+2026-01-16T12:00:01.000Z [ERROR] db=postgres-primary No space left on device: could not write to file "pg_wal/000000010000000000000057"
+2026-01-16T12:00:01.001Z [ERROR] db=postgres-primary disk full: unable to write WAL segment to /data/pg_wal
+2026-01-16T12:00:01.002Z [ERROR] db=postgres-primary ENOSPC: write failed: No space on device — aborting checkpoint
+2026-01-16T12:00:01.003Z [ERROR] db=postgres-primary filesystem is full: /data (100% used, 0 bytes available)
+2026-01-16T12:00:01.004Z [ERROR] db=postgres-primary not enough disk space to complete WAL archiving
+2026-01-16T12:00:01.005Z [ERROR] db=postgres-primary storage volume is full: cannot write new pages to heap file
+2026-01-16T12:00:01.006Z [WARN]  db=postgres-primary Disk quota exceeded: ephemeral storage limit of 20Gi reached
+2026-01-16T12:00:02.000Z [ERROR] db=postgres-primary write failed: No space left on device — new connections may fail
+2026-01-16T12:00:05.000Z [ERROR] service=user-api could not connect to server: PostgreSQL server at postgres:5432
+2026-01-16T12:00:05.001Z [ERROR] service=user-api connection refused: database server not accepting new connections
+2026-01-16T12:00:05.002Z [ERROR] service=user-api database connection failed: unable to connect after 3 retries
+2026-01-16T12:00:05.003Z [ERROR] service=user-api ECONNREFUSED: connect ECONNREFUSED 10.96.0.5:5432
+2026-01-16T12:00:05.004Z [ERROR] service=user-api connection pool exhausted: all connections failing to open
+2026-01-16T12:00:10.000Z [FATAL] service=user-api unable to connect to database — service cannot start
+2026-01-16T12:00:10.001Z [INFO]  k8s-event pod=user-api-pod Back-off restarting failed container
+2026-01-16T12:00:10.002Z [WARN]  k8s-event pod=user-api-pod pod restart count: 1
+2026-01-16T12:00:10.003Z [INFO]  k8s-event pod=user-api-pod CrashLoopBackOff

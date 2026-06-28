@@ -1,0 +1,18 @@
+2026-01-15T18:00:00.001Z [INFO]  service=app-server Running database migrations on startup
+2026-01-15T18:00:00.100Z [INFO]  flyway version=9.22.3 Migrating schema "public" to version 42 - add_payment_table
+2026-01-15T18:00:00.200Z [ERROR] flyway error: SQL State = 42P07, Error Code = 0
+2026-01-15T18:00:00.201Z [ERROR] flyway error: ERROR: relation "payments" already exists
+2026-01-15T18:00:00.202Z [ERROR] flyway Migration V42 failed with 1 error
+2026-01-15T18:00:00.203Z [ERROR] service=app-server schema migration failed: V42__add_payment_table.sql could not be applied
+2026-01-15T18:00:00.204Z [ERROR] service=app-server migration failed: version mismatch — expected schema v41, found v42 already partially applied
+2026-01-15T18:00:00.205Z [ERROR] service=app-server failed to apply migration: V42 — rolling back to checkpoint
+2026-01-15T18:00:00.206Z [ERROR] service=app-server migration rollback triggered: cleaning up partial migration state
+2026-01-15T18:00:00.207Z [ERROR] service=app-server database migration error: schema is in failed state
+2026-01-15T18:00:00.208Z [ERROR] service=app-server schema version mismatch: database at version 42_FAILED, code expects version 43
+2026-01-15T18:00:00.209Z [FATAL] service=app-server unable to run migration: refusing to start with inconsistent schema
+2026-01-15T18:00:00.210Z [FATAL] service=app-server migration script failed: application cannot start without successful schema migration
+2026-01-15T18:00:00.211Z [FATAL] service=app-server application startup error: database schema out of date — apply migration manually
+2026-01-15T18:00:00.212Z [FATAL] service=app-server fatal error during initialization: migration blocker
+2026-01-15T18:00:00.213Z [INFO]  service=app-server Exiting with code 1 (migration failure)
+2026-01-15T18:00:10.000Z [INFO]  k8s-event pod=app-server-001 Back-off restarting failed container
+2026-01-15T18:00:10.001Z [INFO]  k8s-event pod=app-server-001 CrashLoopBackOff

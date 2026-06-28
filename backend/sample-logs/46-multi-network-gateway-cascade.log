@@ -1,0 +1,24 @@
+
+=== 3-hop cascade: NETWORK_TIMEOUT → SERVICE_CIRCUIT_BREAKER_OPEN → HTTP_GATEWAY_ERROR ===
+Root cause: Network timeouts to downstream service trip the circuit breaker → gateway errors propagate.
+
+2026-01-16T18:00:00.001Z [INFO]  service=order-svc Making call to inventory-svc:8080
+2026-01-16T18:00:00.500Z [ERROR] service=order-svc connection timed out: inventory-svc:8080 after 500ms
+2026-01-16T18:00:00.501Z [ERROR] service=order-svc network timeout: inventory-svc did not respond within 500ms
+2026-01-16T18:00:01.000Z [ERROR] service=order-svc read timeout: waiting for response from inventory-svc
+2026-01-16T18:00:01.001Z [ERROR] service=order-svc TCP connection timeout: SYN to 10.96.0.15:8080 not acknowledged
+2026-01-16T18:00:01.002Z [ERROR] service=order-svc context deadline exceeded: inventory-svc request canceled
+2026-01-16T18:00:01.100Z [ERROR] service=order-svc upstream timed out: inventory-svc response > 500ms threshold
+2026-01-16T18:00:01.200Z [ERROR] service=order-svc gateway timeout: inventory-svc exceeded max response time
+2026-01-16T18:00:01.300Z [ERROR] service=order-svc operation timed out: 5 consecutive timeout errors to inventory-svc
+2026-01-16T18:00:01.400Z [ERROR] service=order-svc i/o timeout: all reads from inventory-svc are timing out
+2026-01-16T18:00:05.000Z [ERROR] service=order-svc circuit breaker triggered: failure rate=100% for inventory-svc
+2026-01-16T18:00:05.001Z [ERROR] service=order-svc circuit is OPEN: blocking all calls to inventory-svc
+2026-01-16T18:00:05.002Z [ERROR] service=order-svc circuit breaker open: consecutive failures exceeded threshold
+2026-01-16T18:00:05.003Z [ERROR] service=order-svc circuit opened after consecutive failures: 10/10 timed out
+2026-01-16T18:00:05.004Z [ERROR] service=order-svc requests blocked by circuit breaker: inventory-svc unavailable
+2026-01-16T18:00:05.005Z [WARN]  service=order-svc fallback triggered: returning empty inventory response
+2026-01-16T18:00:10.000Z [ERROR] nginx=ingress 503 Service Unavailable: order-svc circuit open
+2026-01-16T18:00:10.001Z [ERROR] nginx=ingress 502 Bad Gateway: upstream connect error while connecting to order-svc
+2026-01-16T18:00:10.002Z [ERROR] nginx=ingress upstream connection failure: all upstream hosts returning errors
+2026-01-16T18:00:10.003Z [ERROR] nginx=ingress no upstream hosts available for cluster order-svc

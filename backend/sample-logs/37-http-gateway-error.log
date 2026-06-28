@@ -1,0 +1,13 @@
+2026-01-16T09:00:00.001Z [INFO]  nginx=ingress-controller Proxying request to backend service user-api:8080
+2026-01-16T09:00:00.050Z [ERROR] nginx=ingress-controller upstream connect error or disconnect/reset before headers — code 502
+2026-01-16T09:00:00.051Z [ERROR] nginx=ingress-controller 502 Bad Gateway: upstream connect error while connecting to upstream
+2026-01-16T09:00:00.100Z [ERROR] nginx=ingress-controller upstream connection failure: connect() failed (111: Connection refused) while connecting to upstream
+2026-01-16T09:00:00.101Z [ERROR] nginx=ingress-controller bad gateway: all upstream servers are busy or down
+2026-01-16T09:00:00.200Z [ERROR] nginx=ingress-controller no upstream hosts available for cluster user-api
+2026-01-16T09:00:00.201Z [ERROR] nginx=ingress-controller 503 Service Unavailable: no healthy upstream servers
+2026-01-16T09:00:00.300Z [ERROR] nginx=ingress-controller backend unavailable: health check failed for 10.96.0.10:8080
+2026-01-16T09:00:00.301Z [ERROR] nginx=ingress-controller upstream service unreachable: no endpoints registered
+2026-01-16T09:00:00.400Z [ERROR] nginx=ingress-controller 502 upstream connection timed out reading response header from upstream
+2026-01-16T09:00:00.401Z [ERROR] nginx=ingress-controller 503 service temporarily unavailable: upstream pool is empty
+2026-01-16T09:00:00.500Z [ERROR] envoy=sidecar connect ECONNREFUSED upstream: 127.0.0.1:8080 refused connection
+2026-01-16T09:00:00.501Z [ERROR] nginx=ingress-controller upstream service returned 503: no available healthy pods

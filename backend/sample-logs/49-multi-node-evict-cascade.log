@@ -1,0 +1,24 @@
+
+=== 3-hop cascade: NODE_NOT_READY → POD_EVICTED → CRASH_LOOP_BACKOFF ===
+Root cause: Node goes NotReady → running pods evicted → pods restart-loop trying to reschedule.
+
+2026-01-16T21:00:00.001Z [INFO]  k8s-controller Monitoring node health for worker-node-05
+2026-01-16T21:00:30.000Z [WARN]  k8s-controller node=worker-node-05 kubelet stopped posting node status
+2026-01-16T21:00:30.001Z [WARN]  k8s-controller node=worker-node-05 node heartbeat has expired: 35s since last update
+2026-01-16T21:00:30.002Z [ERROR] k8s-event node=worker-node-05 NodeNotReady: kubelet has not checked in with the API server
+2026-01-16T21:00:30.003Z [ERROR] k8s-controller node=worker-node-05 node is not ready: condition=Ready status=Unknown
+2026-01-16T21:00:30.004Z [ERROR] k8s-event node=worker-node-05 node status: NotReady — marking for eviction
+2026-01-16T21:00:30.005Z [ERROR] k8s-controller node=worker-node-05 node condition: Ready=Unknown for 35 seconds
+2026-01-16T21:00:30.006Z [ERROR] k8s-controller node=worker-node-05 NodeCondition Ready is Unknown: applying eviction taint
+2026-01-16T21:00:30.007Z [ERROR] k8s-controller node=worker-node-05 node controller evicting pods from unreachable node
+2026-01-16T21:00:30.008Z [WARN]  k8s-event node=worker-node-05 failed to get node lease for worker-node-05
+2026-01-16T21:00:35.000Z [ERROR] k8s-event pod=frontend-svc-pod1 pod evicted: The node was low on resource (node NotReady)
+2026-01-16T21:00:35.001Z [ERROR] k8s-event pod=frontend-svc-pod1 Evicted: node worker-node-05 unreachable
+2026-01-16T21:00:35.002Z [ERROR] k8s-event pod=api-worker-pod2 pod eviction triggered: reason=NodeNotReady
+2026-01-16T21:00:35.003Z [ERROR] k8s-event pod=api-worker-pod2 The node was low on resource: node is unreachable
+2026-01-16T21:00:35.004Z [ERROR] k8s-event pod=api-worker-pod2 eviction threshold has been met: node failure event
+2026-01-16T21:00:35.005Z [ERROR] k8s-event pod=cache-pod3 pod evicted due to disk pressure: node failure cascade
+2026-01-16T21:00:40.000Z [INFO]  k8s-event pod=frontend-svc-pod1 Back-off restarting failed container
+2026-01-16T21:00:40.001Z [WARN]  k8s-event pod=frontend-svc-pod1 pod restart count: 1
+2026-01-16T21:00:40.002Z [INFO]  k8s-event pod=frontend-svc-pod1 CrashLoopBackOff
+2026-01-16T21:00:40.003Z [INFO]  k8s-event pod=api-worker-pod2 CrashLoopBackOff

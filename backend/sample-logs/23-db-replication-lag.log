@@ -1,0 +1,15 @@
+2026-01-15T19:00:00.001Z [INFO]  db=postgres-replica status=monitoring replication_lag=0s
+2026-01-15T19:00:05.000Z [WARN]  db=postgres-replica replication lag: 5 seconds behind primary
+2026-01-15T19:00:15.000Z [WARN]  db=postgres-replica replication delay: 15 seconds — write-ahead log apply falling behind
+2026-01-15T19:00:30.000Z [ERROR] db=postgres-replica replication lag: 30 seconds — exceeds alert threshold
+2026-01-15T19:00:30.001Z [ERROR] db=postgres-replica replica is behind master by 30 seconds (WAL bytes: 524288000)
+2026-01-15T19:00:45.000Z [ERROR] db=postgres-replica streaming replication lag exceeded: 45s > max_allowed 30s
+2026-01-15T19:00:45.001Z [ERROR] db=postgres-replica WAL sender timeout: no data received from primary in 10000ms
+2026-01-15T19:01:00.000Z [CRITICAL] db=postgres-replica standby is too far behind: replay LSN lags primary by 1.2 GB
+2026-01-15T19:01:00.001Z [ERROR] db=postgres-replica replication is broken — replica has lost sync with primary
+2026-01-15T19:01:00.002Z [ERROR] db=postgres-replica replica not synced: primary WAL segment not available on replica
+2026-01-15T19:01:00.003Z [ERROR] db=postgres-replica seconds_behind_master=120 — critical threshold breached
+2026-01-15T19:01:00.004Z [ERROR] db=postgres-replica replica out of sync: diverged from primary at LSN 0/4A000028
+2026-01-15T19:01:05.000Z [ERROR] db=postgres-replica replication slot inactive: slot 'replica_slot_01' has no active process
+2026-01-15T19:01:10.000Z [ERROR] service=read-api database connection failed: read replica is too far behind — routing to primary
+2026-01-15T19:01:10.001Z [ERROR] service=read-api could not connect to database: replica replication lag too high for consistent reads
