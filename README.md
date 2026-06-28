@@ -352,7 +352,7 @@ Browse blueprints, rules, relationships, and remediation guidance.
 ## Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/deployment-doctor.git
+git clone https://github.com/Guna-Asher/Deployment_Doctor.git
 
 cd deployment-doctor
 ```
