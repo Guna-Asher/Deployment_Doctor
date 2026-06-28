@@ -8,8 +8,10 @@
 [![Python](https://img.shields.io/badge/python-3.11+-green)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-production-ready-009688)]()
 [![React](https://img.shields.io/badge/react-frontend-61DAFB)]()
-[![License](https://img.shields.io/badge/license-MIT-yellow)]()
-[![Coverage](https://img.shields.io/badge/coverage-90%25+-brightgreen)]()
+![Coverage](https://img.shields.io/badge/coverage-90%25+-brightgreen)
+![Rules](https://img.shields.io/badge/rules-445-orange)
+![Blueprints](https://img.shields.io/badge/blueprints-38-blueviolet)
+![License](https://img.shields.io/badge/license-MIT-yellow)
 
 </p>
 
@@ -317,33 +319,137 @@ Nothing is hidden.
 
 ## Executive Dashboard
 
-Monitor incidents, severity trends, and root cause rankings.
+The operational command center for incident diagnosis.
 
-> Screenshot Placeholder
+Provides:
+
+- Severity distribution
+- Root cause rankings
+- Incident summaries
+- Platform health visibility
+- Investigation entry points
+
+<p align="center">
+  <img src="docs/assets/Main_Dashboard.png" width="100%">
+</p>
 
 ---
 
-## Incident Explorer
+## Incident Analysis
 
-Inspect evidence, confidence scoring, and diagnosis details.
+Detailed incident breakdown with evidence attribution and confidence scoring.
 
-> Screenshot Placeholder
+Each diagnosis contains:
+
+- Root cause identification
+- Supporting evidence
+- Confidence calculations
+- Rule matches
+- Recommended remediation
+
+<p align="center">
+  <img src="docs/assets/Sample_output1.png" width="100%">
+</p>
+
+---
+
+## Evidence Attribution
+
+Every finding is backed by log-level proof.
+
+Deployment Doctor records:
+
+- Matching rule
+- Blueprint source
+- Line number
+- Confidence contribution
+
+<p align="center">
+  <img src="docs/assets/Sample_output2.png" width="100%">
+</p>
+
+---
+
+## Root Cause Ranking
+
+Separates actual causes from downstream symptoms.
+
+Ranking incorporates:
+
+- Pattern confidence
+- Relationship validation
+- Symptom penalties
+- Cascade bonuses
+
+<p align="center">
+  <img src="docs/assets/Sample_output3.png" width="100%">
+</p>
+
+---
+
+## Audit Trail
+
+Complete reasoning transparency.
+
+Every scoring decision can be traced from:
+
+```text
+Log Line
+   ↓
+Matched Rule
+   ↓
+Blueprint
+   ↓
+Relationship Validation
+   ↓
+Confidence Score
+   ↓
+Final Ranking
+```
+
+<p align="center">
+  <img src="docs/assets/Sample_output4.png" width="100%">
+</p>
 
 ---
 
 ## Cascade Explorer
 
-Visualize failure propagation across systems.
+Visual representation of multi-hop failure propagation.
 
-> Screenshot Placeholder
+Example:
+
+```text
+DNS Failure
+    ↓
+Database Failure
+    ↓
+Application Timeout
+    ↓
+CrashLoopBackOff
+```
+
+<p align="center">
+  <img src="docs/assets/cascade_explorer.png" width="100%">
+</p>
 
 ---
 
-## Knowledge Library
+## Operational Knowledge Engine
 
-Browse blueprints, rules, relationships, and remediation guidance.
+Browse all operational intelligence assets.
 
-> Screenshot Placeholder
+Includes:
+
+- Incident blueprints
+- Detection rules
+- Relationship definitions
+- Verification procedures
+- Remediation guidance
+
+<p align="center">
+  <img src="docs/assets/knowldge_Base.png" width="100%">
+</p>
 
 ---
 
